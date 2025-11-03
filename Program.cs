@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, Crystal Coders on Team 5!");
+            Console.WriteLine("Hello, Crystal Coders on Team 5! Test 2!");
         }
     }
 }
