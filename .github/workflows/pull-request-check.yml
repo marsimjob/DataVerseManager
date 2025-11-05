@@ -1,0 +1,40 @@
+name: Pull Request check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x # or your preferred version
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Notify Discord (Success)
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": \"✅ .NET Build Succeeded for PR #${{ github.event.pull_request.number }} in ${{ github.repository }}\"}" \
+            ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Notify Discord (Failure)
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": \"❌ .NET Build Failed for PR #${{ github.event.pull_request.number }} in ${{ github.repository }}\"}" \
+            ${{ secrets.DISCORD_WEBHOOK }}
