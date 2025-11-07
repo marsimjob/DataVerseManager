@@ -17,17 +17,20 @@ namespace DataVerseManager.Models
 
         public double WinRate { get; set; }
 
+        // image path for Canvas.Image
+        public string ImageFile { get; set; }
+
         // Constructor
         public Team()
         {
-            // Make a list with only the total powers of player
-            List<double> ListWinRate = new List<double>();
-            foreach(Player p in TeamPlayer)
-            {
-                ListWinRate.Add(p.TotalStat);
-            }
-            // Each team's win rate is predicated on its Player's total stats
-            WinRate = ListWinRate.Average();
+            //// Make a list with only the total powers of player
+            //List<double> ListWinRate = new List<double>();
+            //foreach (Player p in TeamPlayer)
+            //{
+            //    ListWinRate.Add(p.TotalStat);
+            //}
+            //// Each team's win rate is predicated on its Player's total stats
+            //WinRate = ListWinRate.Average();
         }
 
         // Methods
