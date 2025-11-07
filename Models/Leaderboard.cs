@@ -4,12 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataVerseManager
+namespace DataVerseManager.Models
 {
     internal class Leaderboard
     {
-
-        // *** WILL NEED A JSON PROCESS TO SAVE CURRENT LEADERBOARDS FOR FUTURE RUNS OF THE APP
+        /// <summary>
+        /// UPPGIFT: SKAPA EN LEADERBOARD SOM VISAR VILKA TEAMS SOM HAR MEST VINSTER MED SPECTRE CONSOLE TABELL
+        /// SPARA TILL JSON OCH ÅTERANVÄND SAMMA LISTA NÄSTA GÅNG DU KÖR PROGRAMMET. ANVÄND LINQ FÖR ATT FILTRERA.
+        /// KOLLA TEAM CLASS, ALLA VARIABLER STÅR DÄR.
+        /// </summary> 
+        
+        /// *** WILL NEED A JSON PROCESS TO SAVE CURRENT LEADERBOARDS FOR FUTURE RUNS OF THE APP
 
         // Look at Table on SpectreConsole and use it for this display function
         List<Team> allTeams;

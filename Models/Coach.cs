@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataVerseManager
+namespace DataVerseManager.Models
 {
     internal class Coach
     {

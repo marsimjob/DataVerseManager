@@ -1,4 +1,4 @@
-﻿namespace DataVerseManager
+﻿namespace DataVerseManager.Models
 {
     internal class Rule
     {

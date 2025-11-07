@@ -4,10 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataVerseManager
+namespace DataVerseManager.Models
 {
     internal static class RuleBook
-    {     
+    {
+        /// <summary>
+        /// UPPGIFT: GÖR EN UPPLSAGSBOK FÖR REGLER MED ETT SÖKFÄLLT SOM SÖKER EFTER ANTINGEN REGELNAMNET, REGELNUMRET ELLER REGEL KEY WORDS.
+        /// NÄR MAN SLÅR UPP REGELN SKA MAN KUNNA LÄSA OCH FÖRSÄTTA SÖKA VIDARE. KOLLA RULE CLASS FÖR ATT SEE INFORMATION OM REGEL OBJEKTEN.
+        /// </summary> 
+
         // This class should work as a dictionary for rules of Basketball.
         // The user should write in a keyword that, if it has matches, should bring them to
         // a page of information on the rule.
