@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DataVerseManager.Models
 {
-    internal class Team
+    public class Team
     {
         // Attributes
         public List<Player> TeamPlayer = new List<Player>();
@@ -36,13 +36,23 @@ namespace DataVerseManager.Models
         // Methods
         public void AddTeamMember(Player player)
         {
-            
-            TeamPlayer.Add(player);
-            // If team has over 5 members, choose which one to replace
+            if (TeamPlayer.Count < 5)
+            {
+                TeamPlayer.Add(player);
+                player.PlayerTeam = this;
+                Console.WriteLine($"{player.PlayerName} was added to {TeamName}");
+            }
+            else
+            {
+                // If team has over 5 members, choose which one to replace
+            }
         }
         public void ShowTeamPlayers()
         {
-            // Show a list of your team
+            foreach(Player member in TeamPlayer)
+            {
+                Console.WriteLine(member.PlayerName);
+            }
         }
        public Player GetPlayerFromTeamList(int playerIndex)
         {

@@ -30,7 +30,7 @@ namespace DataVerseManager.UI
                 color = Color.Green;
             }
 
-            bar.AddItem(valueName, value, color);
+            bar.AddItem(valueName, value, color).UseValueFormatter(val => $"{val:F1}") ;
         }
     }
 }

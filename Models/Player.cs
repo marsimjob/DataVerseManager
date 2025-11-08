@@ -11,7 +11,7 @@ using DataVerseManager.UI;
 
 namespace DataVerseManager.Models
 {
-    internal class Player
+    public class Player
     {
         // Attributes
         public string PlayerName { get; set; }
@@ -73,7 +73,6 @@ namespace DataVerseManager.Models
             TotalStat = 0;
         }
 
-
         // Methods
         public void ShowPlayerInformation()
         {
@@ -84,14 +83,13 @@ namespace DataVerseManager.Models
             var chart = new BarChart().Width(90)
                                       .Label($"Stats for {PlayerName}")
                                       .CenterLabel();
-                                               
-
+                                             
             SpectreGeneric.AddChartBarInColor(chart, Speed, "Speed");
             SpectreGeneric.AddChartBarInColor(chart, Defending, "Defending");
             SpectreGeneric.AddChartBarInColor(chart, Accuracy, "Accuracy");
             SpectreGeneric.AddChartBarInColor(chart, Power, "Power");
 
-            // Build a text block for the “dumping info”
+            // Text to put info into
             var dumpInfoText =
                 $"Age: {PlayerAge}\n" +
                 $"Height: {PlayerHeight} cm\n" +
@@ -99,7 +97,7 @@ namespace DataVerseManager.Models
                 "\n" +
                 $"Information: {PlayerInfo}";
 
-            // Wrap it in a Panel (optional) so it has a border / header
+            // Panel for info
             var dumpPanel = new Panel(dumpInfoText).Header("[bold]Details[/]")
                                                    .Padding(1, 1)  // some spacing inside
                                                    .BorderColor(Color.Grey);
@@ -121,7 +119,6 @@ namespace DataVerseManager.Models
                 .Expand();
 
             // RENDER
-
             var layout = new Layout("Root")
             .SplitRows(
             new Layout("Top").Size(20), 
@@ -146,33 +143,6 @@ namespace DataVerseManager.Models
             layout["Score"].Update(totalScorePanel);
 
             AnsiConsole.Write(layout);
-
-            // I used a grid first:
-            //var grid = new Grid()
-            //   .AddColumn()
-            //   .AddColumn()
-            //   .AddColumn();
-
-            //grid.AddRow(
-            //    new Panel(playerImage).Header(PlayerName),
-            //    dumpPanel,
-            //    new Panel(teamImage).Header("Team")
-            //);
-
-            //grid.AddRow(
-            //     new Panel(chart).Header("[bold]Stats[/]"),
-            //     new Markup(" "),
-            //     totalScorePanel
-            //);
-
-            //grid.Columns[0].Width(45);
-            //grid.Columns[1].Width(22);
-
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    grid.Columns[i].Centered();
-            //}
-            //AnsiConsole.Write(grid);
         }
 
         public void ChangeOrSetTeam()
@@ -186,29 +156,49 @@ namespace DataVerseManager.Models
         {
             // Get a random number of double 1-3 and add to stat 
             Random random = new Random();
-
             // Generate a double between (1.0, 3.0)
             double points = 1.0 + random.NextDouble() * (3.0 - 1.0);
-
+            
+            if (points > 0 && points <= 1.5)
+            {
+                Console.WriteLine($"{PlayerName} had a decent work out");
+            }
+            else if (points > 1.5 && points <= 2.5)
+            {
+                Console.WriteLine($"{PlayerName} had a great work out");
+            }
+            else if (points > 2.5 && points <= 3)
+            {
+                Console.WriteLine($"{PlayerName} had an AMAZING work out");
+            }
             if (statType == "Speed")
             {
                 Speed += points;
-                Console.WriteLine($"{PlayerName}'s speed has increased by {points} points!");
+                string formattedPoints = points.ToString("F1");
+                string formattedTotals = Speed.ToString("F1");
+                Console.WriteLine($"{PlayerName}'s speed has increased by {formattedPoints} points to a total of {formattedTotals}!");
             }
-            else if(statType == "Defending")
+            else if (statType == "Defending")
             {
                 Defending += points;
-                Console.WriteLine($"{PlayerName}'s defense has increased by {points} points!");
+                string formattedPoints = points.ToString("F1");
+                string formattedTotals = Defending.ToString("F1");
+                Console.WriteLine($"{PlayerName}'s defense has increased by {formattedPoints} points to a total of {formattedTotals}!");
             }
-            else if(statType == "Accuracy")
+            else if (statType == "Accuracy")
             {
                 Accuracy += points;
-                Console.WriteLine($"{PlayerName}'s accuracy has increased by {points} points!");
+                string formattedPoints = points.ToString("F1");
+                string formattedTotals = Accuracy.ToString("F1");
+                Console.WriteLine($"{PlayerName}'s accuracy has increased by {formattedPoints} points to a total of {formattedTotals}!");
             }
-            else if( statType == "Power")
+            else if (statType == "Power")
             {
                 Power += points;
-                Console.WriteLine($"{PlayerName}'s power has increased by {points} points!");
+                string formattedPoints = points.ToString("F1");
+                string formattedTotals = Power.ToString("F1");
+                Console.WriteLine($"{PlayerName}'s power has increased by {formattedPoints} points to a total of {formattedTotals}!");
+
             }
         }
     }
