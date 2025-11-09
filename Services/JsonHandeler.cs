@@ -15,7 +15,7 @@ namespace DataVerseManager.Services
             try
             {
                 string json = JsonSerializer.Serialize(readObject,
-                    new JsonSerializerOptions { WriteIndented = true });
+                new JsonSerializerOptions { WriteIndented = true });
 
                 File.WriteAllText(path, json);
             }
