@@ -7,19 +7,7 @@ namespace DataVerseManager
     {
         static void Main(string[] args)
         {
-            // Try catch stuff:
-            Console.WriteLine("Type something with int");
-            string input = Console.ReadLine();
-
-            try
-            {
-                int inputToInt = int.Parse(input);
-                Console.WriteLine("This is an int!");
-            }
-            catch (Exception ex) 
-            {
-                Console.WriteLine("This is NOT an int!");
-            }
+          
 
             // Save a list (or any other object to json)
             Matchboard newBoard = new Matchboard();
@@ -36,6 +24,10 @@ namespace DataVerseManager
 
             // Kör programmet
             leaderboard.Run();
+
+                
+
+
 
         }
     }

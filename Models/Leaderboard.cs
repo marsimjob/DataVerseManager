@@ -65,6 +65,8 @@ namespace DataVerseManager.Models
 
             JsonHandeler.SaveJson(teams, "leaderboard.json");
 
+
+
         }
 
         // ---------- REGISTRERA MATCH ----------
@@ -143,7 +145,7 @@ namespace DataVerseManager.Models
             table.AddColumn(new TableColumn("[bold]Lag[/]"));                 // Lagnamn
             table.AddColumn(new TableColumn("[green]Vinster[/]").Centered()); // Antal vinster
             table.AddColumn(new TableColumn("[red]Förluster[/]").Centered()); // Antal förluster
-            table.AddColumn(new TableColumn("[yellow]W/L[/]").Centered());    // Win/Loss-ratio
+            table.AddColumn(new TableColumn("[blue]W/L[/]").Centered());    // Win/Loss-ratio
 
             // Håller reda på placeringen (1:a, 2:a, osv.)
             int rank = 1;
@@ -157,7 +159,7 @@ namespace DataVerseManager.Models
                     "[white]" + team.TeamName + "[/]",                  // Lagnamn
                     "[green]" + team.TeamWins + "[/]",                  // Vinster
                     "[red]" + team.TeamLoses + "[/]",                   // Förluster
-                    "[yellow]" + team.WinRate.ToString("F2") + "[/]"    // W/L-ratio (två decimaler)
+                    "[blue]" + team.WinRate.ToString("F2") + "[/]"    // W/L-ratio (två decimaler)
                 );
 
                 // Gå till nästa placering
