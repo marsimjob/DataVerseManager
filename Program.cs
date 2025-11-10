@@ -7,28 +7,19 @@ namespace DataVerseManager
     {
         static void Main(string[] args)
         {
-            // Try catch stuff:
-            Console.WriteLine("Type something with int");
-            string input = Console.ReadLine();
+            string jsonPath = "matchboards.json";
 
-            try
-            {
-                int inputToInt = int.Parse(input);
-                Console.WriteLine("This is an int!");
-            }
-            catch (Exception ex) 
-            {
-                Console.WriteLine("This is NOT an int!");
-            }
+            Matchboard board = new Matchboard();
 
-            // Save a list (or any other object to json)
-            Matchboard newBoard = new Matchboard();
-            JsonHandeler.SaveJson(newBoard.Matchboards, "matchboards.json");
+            
+            // Försök ladda JSON,0
+            board.Matchboards = JsonHandeler.LoadJson<List<Match>>(jsonPath);
 
-            // Load a list (or any other object from json)
-            List<Match> matches = new List<Match>();
-            matches = JsonHandeler.LoadJson<List<Match>>("matchboards.json");
-                
+            // Visa tabell
+            board.DisplayLatestMatches();
+
+            board.SearchByTeam();
+
         }
     }
 }
