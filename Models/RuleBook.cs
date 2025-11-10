@@ -1,167 +1,178 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DataVerseManager.Models;
 
 namespace DataVerseManager.Models
 {
+   /// <summary>
+   /// RuleBook är "regelboken" – den innehåller en lista med alla regler
+   /// och metoder för att söka och visa dem.
+   /// </summary>
     internal static class RuleBook
     {
-        // Denna lista är själva "uppslagsboken" – här ligger alla reglerna.
-        public static List<Rule> ListOfRules = new List<Rule>
+       /// <summary>
+       /// Här ligger alla våra 15 regler.
+       /// </summary>
+        public static List<Rule> ListOfRules { get; } = new List<Rule>
 {
 new Rule(
 1,
 "Team and Game Setup",
 "Each team has 5 players on the court. The goal is to score points by shooting the ball through the opponent's hoop.",
-"Setup", "Team", "Players"),
+"team", "players", "setup"),
 
 new Rule(
 2,
 "Scoring",
-"A field goal inside the three-point line is worth 2 points. Behind the three-point line it is worth 3 points. A made free throw is worth 1 point.",
-"Points", "Three-point", "Free throw"),
+"A field goal is worth 2 or 3 points depending on distance. A free throw is worth 1 point.",
+"points", "score", "shot"),
 
 new Rule(
 3,
 "Game Duration",
-"The game is divided into periods (quarters or halves). The team with the most points at the end of the game wins.",
-"Time", "Periods", "Score"),
+"The game is divided into 4 quarters. The team with the highest score at the end wins.",
+"time", "quarters", "duration"),
 
 new Rule(
 4,
-"Tip-off",
-"The game starts with a jump ball at center court between two players, one from each team.",
-"Start", "Jump ball", "Center"),
+"Starting Play",
+"The game begins with a jump ball at the center circle between two opposing players.",
+"start", "jump", "tipoff"),
 
 new Rule(
 5,
 "Dribbling",
-"A player must bounce (dribble) the ball while moving. Running without dribbling is not allowed.",
-"Dribble", "Move", "Ball control"),
+"A player must bounce the ball while moving. Running without dribbling is called traveling.",
+"dribble", "bounce", "move"),
 
 new Rule(
 6,
-"Travelling",
-"A travelling violation happens when a player takes too many steps without dribbling the ball.",
-"Travel", "Steps", "Violation"),
+"Passing",
+"Players can pass the ball to teammates using chest, bounce, or overhead passes.",
+"pass", "assist", "teamwork"),
 
 new Rule(
 7,
-"Double Dribble",
-"A player may not stop dribbling, hold the ball, and then start dribbling again.",
-"Double", "Dribble", "Violation"),
+"Shooting",
+"A player shoots the ball to score. Shots taken from beyond the three-point line are worth 3 points.",
+"shoot", "basket", "three-pointer"),
 
 new Rule(
 8,
-"Personal Foul",
-"Illegal physical contact with an opponent, such as hitting, pushing or blocking unfairly, is a personal foul.",
-"Foul", "Contact", "Defense"),
+"Rebounding",
+"When a shot is missed, players can jump to grab the ball. This is called a rebound.",
+"rebound", "miss", "jump"),
 
 new Rule(
 9,
-"Shooting Foul",
-"If a defender fouls a shooter while they are taking a shot, the shooter is awarded free throws.",
-"Shooting", "Foul", "Free throws"),
+"Traveling",
+"Traveling happens when a player moves their feet illegally while holding the ball.",
+"travel", "steps", "violation"),
 
 new Rule(
 10,
-"Free Throws",
-"Free throws are taken from the free-throw line with no defense, after certain fouls.",
-"Free throw", "Line", "Foul"),
+"Double Dribble",
+"A player cannot start dribbling again after stopping, or dribble with both hands at the same time.",
+"double dribble", "mistake", "violation"),
 
 new Rule(
 11,
-"Three-Second Rule",
-"An offensive player may not stay in the key (paint) area for more than three seconds while their team has the ball.",
-"Three seconds", "Key", "Paint"),
+"Personal Fouls",
+"Personal fouls involve illegal contact such as pushing, hitting, or holding.",
+"foul", "contact", "defense"),
 
 new Rule(
 12,
-"Backcourt Violation",
-"Once the offensive team has brought the ball over the midcourt line, they may not return the ball to the backcourt.",
-"Backcourt", "Midcourt", "Violation"),
+"Free Throws",
+"After certain fouls, the player gets free throws worth 1 point each.",
+"free throw", "line", "foul shot"),
 
 new Rule(
 13,
-"Out of Bounds",
-"The ball is out of bounds when it touches a player or the floor outside the boundary lines.",
-"Sideline", "Baseline", "Out"),
+"Three-Second Rule",
+"An offensive player cannot stay in the paint for more than three seconds while their team has the ball.",
+"paint", "key", "violation"),
 
 new Rule(
 14,
-"Substitutions",
-"Players may be substituted during stoppages in play when allowed by the referee.",
-"Subs", "Bench", "Players"),
+"Backcourt Violation",
+"After crossing mid-court, the offensive team cannot return the ball to the backcourt.",
+"backcourt", "midcourt", "rule"),
 
 new Rule(
 15,
-"Time-outs",
-"Coaches may request time-outs to stop the game clock and talk to their team.",
-"Timeout", "Coach", "Clock")
+"Timeouts",
+"Coaches may call timeouts to stop play for strategy or to rest players.",
+"timeout", "coach", "break")
 };
 
-        // ===========================
-        // SÖK EFTER EN REGEL
-        // ===========================
+     /// <summary>
+     /// Låter användaren skriva in ett regelnummer eller ett nyckelord
+     /// och försöker hitta en matchande regel.
+     
+        
+     
+        /// </summary>
         public static void SearchRule()
         {
-            try
+            Console.Write("Write a rule number or a keyword to search: ");
+            string? input = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(input))
             {
-                Console.WriteLine("Write a rule number, name or keyword to search for:");
-                Console.Write("> ");
-                string input = Console.ReadLine() ?? "";
-
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    Console.WriteLine("You must write something to search for.");
-                    return;
-                }
-
-                Rule foundRule = null;
-
-                // 1) Försök först tolka som ett regelnummer
-                if (int.TryParse(input, out int ruleNumber))
-                {
-                    foundRule = ListOfRules
-                    .FirstOrDefault(r => r.RuleNr == ruleNumber);
-                }
-                else
-                {
-                    // 2) Annars sök på namn, info eller nyckelord (case-insensitive)
-                    string search = input.Trim().ToLower();
-
-                    foundRule = ListOfRules.FirstOrDefault(r =>
-                    r.RuleName.ToLower().Contains(search) ||
-                    r.RuleInfo.ToLower().Contains(search) ||
-                    r.KeyWord1.ToLower().Contains(search) ||
-                    r.KeyWord2.ToLower().Contains(search) ||
-                    r.KeyWord3.ToLower().Contains(search));
-                }
-
-                if (foundRule != null)
-                {
-                    ShowRule(foundRule);
-                }
-                else
-                {
-                    Console.WriteLine("No rule matched your search.");
-                }
+                Console.WriteLine("You must write something to search for.");
+                return;
             }
-            catch (Exception)
+
+            Rule? foundRule = null;
+
+            // 1. Försök först tolka det användaren skrev som ett regelnummer
+            if (int.TryParse(input, out int ruleNumber))
             {
-                Console.WriteLine("Something went wrong with your input. Please try again.");
+                foundRule = ListOfRules.FirstOrDefault(r => r.RuleNr == ruleNumber);
+            }
+
+            // 2. Om ingen regel hittades med nummer, sök på text/nyckelord
+            if (foundRule is null)
+            {
+                string searchText = input.Trim().ToLower();
+
+                foundRule = ListOfRules.FirstOrDefault(r =>
+                r.RuleName.ToLower().Contains(searchText) ||
+                r.RuleInfo.ToLower().Contains(searchText) ||
+                r.KeyWord1.ToLower().Contains(searchText) ||
+                r.KeyWord2.ToLower().Contains(searchText) ||
+                r.KeyWord3.ToLower().Contains(searchText));
+            }
+
+            // 3. Skriv ut resultat
+            if (foundRule is null)
+            {
+                Console.WriteLine("No rule found that matches your search.");
+            }
+            else
+            {
+                ShowRule(foundRule);
             }
         }
 
-        // ===========================
-        // VISA EN REGEL
-        // ===========================
+        /// <summary>
+        /// Skriver ut en regel på ett tydligt sätt.
+        /// </summary>
         public static void ShowRule(Rule rule)
         {
             Console.WriteLine();
-            Console.WriteLine($"Nr: {rule.RuleNr}");
-            Console.WriteLine($"Name: {rule.RuleName}");
-            Console.WriteLine($"Info: {rule.RuleInfo}");
+            Console.WriteLine($"Rule number : {rule.RuleNr}");
+            Console.WriteLine($"Title : {rule.RuleName}");
+            Console.WriteLine("Description :");
+            Console.WriteLine(rule.RuleInfo);
+
+            if (rule.KeyWordList.Count > 0)
+            {
+                Console.WriteLine($"Keywords : {string.Join(", ", rule.KeyWordList)}");
+            }
+
             Console.WriteLine();
         }
     }
