@@ -1,5 +1,7 @@
 ﻿using DataVerseManager.Models;
 using DataVerseManager.Services;
+using Spectre.Console;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DataVerseManager
 {
@@ -7,19 +9,7 @@ namespace DataVerseManager
     {
         static void Main(string[] args)
         {
-            string jsonPath = "matchboards.json";
-
-            Matchboard board = new Matchboard();
-
-            
-            // Försök ladda JSON,0
-            board.Matchboards = JsonHandeler.LoadJson<List<Match>>(jsonPath);
-
-            // Visa tabell
-            board.DisplayLatestMatches();
-
-            board.SearchByTeam();
-
+         
         }
     }
 }
