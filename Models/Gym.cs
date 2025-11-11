@@ -16,6 +16,8 @@ namespace DataVerseManager.Models
             if (cashAtHand <= 0)
             {
                 AnsiConsole.WriteLine("You're broke!");
+                Console.ReadLine();
+                Console.Clear();
                 return;
             }
 

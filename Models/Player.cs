@@ -77,8 +77,8 @@ namespace DataVerseManager.Models
         public void ShowPlayerInformation()
         {
             // SET UP
-            var playerImage = new CanvasImage(ImageFile).MaxWidth(90);
-            var teamImage = new CanvasImage(PlayerTeam.ImageFile).MaxWidth(30);
+            var playerImage = new CanvasImage(ImageFile).MaxWidth(40).PixelWidth(1);
+            var teamImage = new CanvasImage(PlayerTeam.ImageFile).MaxWidth(30).PixelWidth(1);
 
             var chart = new BarChart().Width(90)
                                       .Label($"Stats for {PlayerName}")
