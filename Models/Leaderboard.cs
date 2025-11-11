@@ -14,11 +14,11 @@ namespace DataVerseManager.Models
 
 
         // En lista som håller alla lag i leaderboarden
-        private System.Collections.Generic.List<TeaM> teams = new System.Collections.Generic.List<TeaM>();
+        private System.Collections.Generic.List<Team> teams = new System.Collections.Generic.List<Team>();
 
         // ---------- INRE KLASS SOM BESKRIVER ETT LAG ----------
 
-        public class TeaM
+        public class Team
         {
             public string TeamName { get; set; } = string.Empty; // Namnet på laget
             public int TeamWins { get; set; }                     // Antal vinster
@@ -52,16 +52,16 @@ namespace DataVerseManager.Models
         private void CreateDefaultTeams()
         {
             // Skapar de 10 lagen med 0 vinster och 0 förluster
-            teams.Add(new TeaM { TeamName = "Warriors" });
-            teams.Add(new TeaM { TeamName = "Lakers" });
-            teams.Add(new TeaM { TeamName = "Knicks" });
-            teams.Add(new TeaM { TeamName = "Bulls" });
-            teams.Add(new TeaM { TeamName = "Celtics" });
-            teams.Add(new TeaM { TeamName = "Heat" });
-            teams.Add(new TeaM { TeamName = "Nets" });
-            teams.Add(new TeaM { TeamName = "Mavericks" });
-            teams.Add(new TeaM { TeamName = "Clippers" });
-            teams.Add(new TeaM { TeamName = "Rockets" });
+            teams.Add(new Team { TeamName = "Warriors" });
+            teams.Add(new Team { TeamName = "Lakers" });
+            teams.Add(new Team { TeamName = "Knicks" });
+            teams.Add(new Team { TeamName = "Bulls" });
+            teams.Add(new Team { TeamName = "Celtics" });
+            teams.Add(new Team { TeamName = "Heat" });
+            teams.Add(new Team { TeamName = "Nets" });
+            teams.Add(new Team { TeamName = "Mavericks" });
+            teams.Add(new Team { TeamName = "Clippers" });
+            teams.Add(new Team { TeamName = "Rockets" });
 
             JsonHandeler.SaveJson(teams, "leaderboard.json");
 
@@ -74,12 +74,12 @@ namespace DataVerseManager.Models
         private void RecordGame(string winnerTeamName, string loserTeamName)
         {
             // Hitta laget som vann 
-            TeaM winner = teams.FirstOrDefault(
+            Team winner = teams.FirstOrDefault(
                 t => t.TeamName.Equals(winnerTeamName, System.StringComparison.OrdinalIgnoreCase)
             );
 
             // Hitta laget som förlorade
-            TeaM loser = teams.FirstOrDefault(
+            Team loser = teams.FirstOrDefault(
                 t => t.TeamName.Equals(loserTeamName, System.StringComparison.OrdinalIgnoreCase)
             );
 
@@ -105,7 +105,7 @@ namespace DataVerseManager.Models
         private void RecalculateWinRatio()
         {
             // Gå igenom alla lag
-            foreach (TeaM team in teams)
+            foreach (Team team in teams)
             {
                 // Om laget inte har några förluster → använd antalet vinster som WinRate
                 if (team.TeamLoses == 0)
@@ -128,7 +128,7 @@ namespace DataVerseManager.Models
             // 1. Högst W/L först
             // 2. Flest vinster
             // 3. Färst förluster
-            System.Collections.Generic.List<TeaM> sortedTeams = teams
+            System.Collections.Generic.List<Team> sortedTeams = teams
                 .OrderByDescending(t => t.WinRate)
                 .ThenByDescending(t => t.TeamWins)
                 .ThenBy(t => t.TeamLoses)
@@ -151,7 +151,7 @@ namespace DataVerseManager.Models
             int rank = 1;
 
             // Lägg till en rad för varje lag i sorteringsordning
-            foreach (TeaM team in sortedTeams)
+            foreach (Team team in sortedTeams)
             {
                 // Lägg till en rad med färgade värden
                 table.AddRow(
