@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DataVerseManager.Models
 {
-    internal class Match
+    public class Match
     {
         // Attributes
         // Match date, when did the match play?
