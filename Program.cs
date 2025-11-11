@@ -1,5 +1,9 @@
 ﻿using System;
 using DataVerseManager.Models;
+﻿using DataVerseManager.Models;
+using DataVerseManager.Services;
+using Spectre.Console;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DataVerseManager
 {
@@ -26,6 +30,7 @@ namespace DataVerseManager
                 Console.Write("Choose an option (1–3): ");
                 string? choice = Console.ReadLine();
                 Console.WriteLine();
+          
 
                 switch (choice)
                 {
@@ -63,6 +68,23 @@ namespace DataVerseManager
                     Console.Clear();
                 }
             }
+            // Load a list (or any other object from json)
+            List<Match> matches = new List<Match>();
+            matches = JsonHandeler.LoadJson<List<Match>>("matchboards.json");
+
+
+
+            // Skapar ett objekt av Leaderboard-klassen
+            Leaderboard leaderboard = new Leaderboard();
+
+            // Kör programmet
+            leaderboard.Run();
+
+                
+
+
+
+         
         }
     }
 }
