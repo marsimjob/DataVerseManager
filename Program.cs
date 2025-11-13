@@ -31,6 +31,12 @@ namespace DataVerseManager
                 string? choice = Console.ReadLine();
                 Console.WriteLine();
           
+            Team lakers = new Team
+            {
+                TeamName = "Los Angeles Lakers",
+                ImageFile = "lakers.png"
+            };  
+            lakers.WinRate = 52;   
 
                 switch (choice)
                 {
@@ -73,18 +79,30 @@ namespace DataVerseManager
             matches = JsonHandeler.LoadJson<List<Match>>("matchboards.json");
 
 
-
-            // Skapar ett objekt av Leaderboard-klassen
-            Leaderboard leaderboard = new Leaderboard();
-
-            // Kör programmet
-            leaderboard.Run();
-
-                
+            Bulls.WinRate = 48; 
 
 
+            Betting betting = new Betting();
 
-         
+            var (lakersOdds, bullsOdds) = Betting.GetOdds(lakers , Bulls);
+
+            betting.ShowBettingTable(lakers, Bulls);
+
+            double mymoney = 10000;
+          
+
+            mymoney += betting.PlaceBet(lakers, Bulls);
+
+            Console.WriteLine($"Remaining money after bet: {mymoney}");
+
+
+          
+
+
+
+
+
+
         }
     }
 }
