@@ -10,28 +10,45 @@ namespace DataVerseManager
         static void Main(string[] args)
         {
           
-
-            // Save a list (or any other object to json)
-            Matchboard newBoard = new Matchboard();
-            JsonHandeler.SaveJson(newBoard.Matchboards, "matchboards.json");
-
-            // Load a list (or any other object from json)
-            List<Match> matches = new List<Match>();
-            matches = JsonHandeler.LoadJson<List<Match>>("matchboards.json");
+            Team lakers = new Team
+            {
+                TeamName = "Los Angeles Lakers",
+                ImageFile = "lakers.png"
+            };  
+            lakers.WinRate = 52;   
 
 
-
-            // Skapar ett objekt av Leaderboard-klassen
-            Leaderboard leaderboard = new Leaderboard();
-
-            // Kör programmet
-            leaderboard.Run();
-
-                
+            Team Bulls = new Team
+            {
+                TeamName = "Chicago Bulls",
+                ImageFile = "bulls.png"
+            };  
 
 
+            Bulls.WinRate = 48; 
 
-         
+
+            Betting betting = new Betting();
+
+            var (lakersOdds, bullsOdds) = Betting.GetOdds(lakers , Bulls);
+
+            betting.ShowBettingTable(lakers, Bulls);
+
+            double mymoney = 10000;
+          
+
+            mymoney += betting.PlaceBet(lakers, Bulls);
+
+            Console.WriteLine($"Remaining money after bet: {mymoney}");
+
+
+          
+
+
+
+
+
+
         }
     }
 }
