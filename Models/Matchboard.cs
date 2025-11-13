@@ -27,6 +27,50 @@ namespace DataVerseManager.Models
         {
         }
 
+        public void ShowMenu()
+        {
+            bool running = true;
+
+            while (running)
+            {
+                Console.Clear(); // ← RENSAR innan menyn visas
+
+                var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title("[yellow]What would you like to do?[/]")
+                        .PageSize(5)
+                        .AddChoices(new[]
+                        {
+                    "View latest matches",
+                    "Search by team",
+                    "Exit"
+                        })
+                );
+
+                switch (choice)
+                {
+                    case "View latest matches":
+                        DisplayLatestMatches();
+                        break;
+
+                    case "Search by team":
+                        SearchByTeam();
+                        break;
+
+                    case "Exit":
+                        running = false;
+                        AnsiConsole.MarkupLine("[green]Goodbye![/]");
+                        break;
+                }
+
+                if (running)
+                {
+                    AnsiConsole.WriteLine();
+                    AnsiConsole.MarkupLine("[grey]Press ENTER to return to menu...[/]");
+                    Console.ReadLine();
+                }
+            }
+        }
 
 
 
