@@ -95,7 +95,7 @@ namespace DataVerseManager.Models
 
             // Remove encrypted salt from password
             string decryptedPassword;
-          
+            // Start at char 0 in the string array and remove the lenght of characeter from reverse salt
             decryptedPassword = decryptedWithSalt.Substring(0, decryptedWithSalt.Length - reverseSalt.Length);
 
             Console.WriteLine("Your password is: " + decryptedPassword);
@@ -178,7 +178,7 @@ namespace DataVerseManager.Models
                              
                 // Prompt the user to enter their password
                 Console.Write("Please enter your password: ");
-                string passwordInput = Console.ReadLine();
+                string passwordInput = ReadHiddenPassword();
 
                 // set salt
                 string salt = ("#" + thisUser.Id.ToString());
@@ -211,6 +211,13 @@ namespace DataVerseManager.Models
             }
         public static void RegisterAccount()
         {
+            //Ask user for their prefered password
+            //Must be 6 symbols at least, 1 special character, 1 caps and one low
+            // Confirm if the password is okay, specter console
+
+            //Inform user of success or not
+            //If succeeded, save to json as a User class
+
             // Declare a new user object to be registered
             User newUser = new User();
 
@@ -244,8 +251,7 @@ namespace DataVerseManager.Models
                 )
                 );
 
-                yesOrNo = yesOrNo.Trim();
-                if (yesOrNo.Equals("Yes", StringComparison.OrdinalIgnoreCase) == true)
+                if (yesOrNo == "Yes")
                 {
                     newUser.Name = newName;
                     AnsiConsole.WriteLine($"Your name has been set to: {newName}");
@@ -253,7 +259,7 @@ namespace DataVerseManager.Models
                     Console.ReadLine();
                     Console.Clear();
                 }
-                else if (yesOrNo.Equals("No", StringComparison.OrdinalIgnoreCase) == true)
+                else if (yesOrNo == "No")
                 {
                     Console.Clear();
                 }
@@ -289,8 +295,8 @@ namespace DataVerseManager.Models
                     )
                     );
 
-                    yesOrNo = yesOrNo.Trim();
-                    if (yesOrNo.Equals("Yes", StringComparison.OrdinalIgnoreCase) == true)
+                  
+                    if (yesOrNo == "Yes")
                     {
                         // We create our own custom salt, it takes the hashtag and combines it with
                         // the newUsers ID (which in this case it its position in the RegisterUser list count)
@@ -306,7 +312,7 @@ namespace DataVerseManager.Models
                         Console.ReadLine();
                         Console.Clear();
                     }
-                    else if (yesOrNo.Equals("No", StringComparison.OrdinalIgnoreCase) == true)
+                    else if (yesOrNo == "No")
                     {
                         Console.Clear();
                     }
@@ -319,17 +325,54 @@ namespace DataVerseManager.Models
                 }
 
         }
-            //Ask user for their prefered password
-            //Must be 6 symbols at least, 1 special character, 1 caps and one low
-            // Confirm if the password is okay, specter console
-
-            //Inform user of success or not
-            //If succeeded, save to json as a User class
-
             newUser.Id = RegisteredUsers.Count();
             RegisteredUsers.Add(newUser);
             JsonHandeler.SaveJson(RegisteredUsers, "registeredUsers.json");
         }
+
+        public static string ReadHiddenPassword()
+        {
+            // Read the password into a string but show the user only "★" for each char
+
+            // Add substrings into an empty string object
+            string passwordPoll = "";
+            // Make a new key state reader
+            ConsoleKeyInfo keyRead;
+
+            bool isReadingPassword = true;
+            while(isReadingPassword)
+            {
+              // Read keys, if true it doesn't show the input by the user
+              keyRead = Console.ReadKey(true);
+
+                // Save the key read to passwordPoll and show the char each time as "★"
+                if (!char.IsControl(keyRead.KeyChar))
+                {
+                    passwordPoll += keyRead.KeyChar;
+                    Console.Write("★");
+                }
+                // Erase char in password if the lenght is 1 and up
+                else if (keyRead.Key == ConsoleKey.Backspace && passwordPoll.Length >= 1)
+                {
+                    passwordPoll = passwordPoll.Substring(0, passwordPoll.Length - 1);
+                    // \b is a back space that moves the cursor in Console back,
+                    // makes a empty space (in other words replace the previous char with empty),
+                    // and sets another step back to be at the position of the char before it to write ahead
+                    Console.Write("\b \b");
+                }
+                // Press enter to confirm the current string
+                else if (keyRead.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    Console.Clear();
+                    isReadingPassword = false;
+                }
+            }
+            // reutrn the poll of chars -- passworPoll as the new Password
+            return passwordPoll;
+        }
+    
+
     }
 }
 
