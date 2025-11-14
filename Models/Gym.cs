@@ -62,7 +62,7 @@ namespace DataVerseManager.Models
                 );
             }
 
-            // Choose stat
+            // Choose a stat to work out with Spectre.Console
             var statToUpgrade = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("What area do you want to work out?")

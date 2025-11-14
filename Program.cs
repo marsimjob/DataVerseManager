@@ -1,8 +1,9 @@
-﻿using System;
-using DataVerseManager.Models;
 ﻿using DataVerseManager.Models;
 using DataVerseManager.Services;
-using Spectre.Console;
+using System;
+using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace DataVerseManager
@@ -11,97 +12,71 @@ namespace DataVerseManager
     {
         static void Main(string[] args)
         {
-            Console.Title = "Basketball RuleBook";
-            bool running = true;
-
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("🏀 Welcome to the Basketball RuleBook!");
-            Console.ResetColor();
-            Console.WriteLine("You can search for rules by number or keyword.");
-            Console.WriteLine();
-
-            while (running)
-            {
-                Console.WriteLine("------------------------------------------------");
-                Console.WriteLine("1. Search for a rule");
-                Console.WriteLine("2. Show all rule titles");
-                Console.WriteLine("3. Exit");
-                Console.WriteLine("------------------------------------------------");
-                Console.Write("Choose an option (1–3): ");
-                string? choice = Console.ReadLine();
-                Console.WriteLine();
-          
-            Team lakers = new Team
-            {
-                TeamName = "Los Angeles Lakers",
-                ImageFile = "lakers.png"
-            };  
-            lakers.WinRate = 52;   
-
-                switch (choice)
-                {
-                    case "1":
-                        // Anropa din redan befintliga sökmetod i RuleBook
-                        RuleBook.SearchRule();
-                        break;
-
-                    case "2":
-                        // Visa en enkel lista med alla regler
-                        Console.WriteLine("All rules in the RuleBook:");
-                        Console.WriteLine("--------------------------");
-                        foreach (var rule in RuleBook.ListOfRules)
-                        {
-                            Console.WriteLine($"{rule.RuleNr}. {rule.RuleName}");
-                        }
-                        Console.WriteLine();
-                        break;
-
-                    case "3":
-                        running = false;
-                        Console.WriteLine("Goodbye! 👋");
-                        break;
-
-                    default:
-                        Console.WriteLine("Please choose a valid option (1, 2 or 3).");
-                        break;
-                }
-
-                if (running)
-                {
-                    Console.WriteLine();
-                    Console.Write("Press ENTER to continue...");
-                    Console.ReadLine();
-                    Console.Clear();
-                }
-            }
-            // Load a list (or any other object from json)
-            List<Match> matches = new List<Match>();
-            matches = JsonHandeler.LoadJson<List<Match>>("matchboards.json");
+            //AccountManager.RegisteredUsers = JsonHandeler.LoadJson("registeredUsers.json");
+            Console.OutputEncoding = Encoding.UTF8;
+            AccountManager.LoadLogInMenu();
+        }
 
 
-            Bulls.WinRate = 48; 
+        static void BettingFunctionTest()
+        {
+            Team Lakers = new Team();
+            Team Bulls = new Team();
+            Team Heat = new Team();
+            Team Warriors = new Team();
+            Team Knicks = new Team();
 
+            Heat.TeamName = "Heat";
+            Lakers.TeamName = "Lakers";
+            Bulls.TeamName = "Bulls";
+            Knicks.TeamName = "Knicks";
+            Warriors.TeamName = "Warriors";
 
-            Betting betting = new Betting();
+            Console.WriteLine(Lakers.WinRate);
+            Console.ReadLine();
 
-            var (lakersOdds, bullsOdds) = Betting.GetOdds(lakers , Bulls);
+            Team.BuildTeam(Lakers);
+            Lakers.CalculateWinLossRate();
+            Console.WriteLine(Lakers.WinRate);
+            Console.ReadLine();
 
-            betting.ShowBettingTable(lakers, Bulls);
+            Heat.WinRate = 51;
+            Knicks.WinRate = 29;
+            Warriors.WinRate = 52;
+            Bulls.WinRate = 37;
 
-            double mymoney = 10000;
-          
+            // Put this in a wallet and make it track with json etc
+            // User --- Wallet as attribute?
+            double bettingCash = 10000;
 
-            mymoney += betting.PlaceBet(lakers, Bulls);
+            Coach myCoach = new Coach();
 
-            Console.WriteLine($"Remaining money after bet: {mymoney}");
+            myCoach.UserWallet.GetMoney(bettingCash);
+            myCoach.CoachName = "Nemo";
+            myCoach.CoachTeam.WinRate = 67;
+            myCoach.CoachTeam.TeamName = ".NETters";
 
+            Betting.PlaceBet(Lakers, Bulls, myCoach);
+            myCoach.UserWallet.ShowWalletBalance();
+            Console.ReadLine();
+            Console.Clear();
 
-          
+            Betting.PlaceBet(Heat, Warriors, myCoach);
+            myCoach.UserWallet.ShowWalletBalance();
+            Console.ReadLine();
+            Console.Clear();
 
+            Betting.PlaceBet(Bulls, myCoach.CoachTeam, myCoach);
+            myCoach.UserWallet.ShowWalletBalance();
+            Console.ReadLine();
+            Console.Clear();
 
+            Betting.PlaceBet(Knicks, Heat, myCoach);
+            myCoach.UserWallet.ShowWalletBalance();
+            Console.ReadLine();
+            Console.Clear();
 
-
-
+            Betting.PrintMoney(myCoach.UserWallet.ReturnWalletBalance());
 
         }
     }
