@@ -63,7 +63,7 @@ namespace DataVerseManager.Models
             return new string(result);
         }
 
-        private static string PasswordDecrypt(string encryptedPassword)
+        public static string PasswordDecrypt(string encryptedPassword)
         {
             char[] result = new char[encryptedPassword.Length];
 
@@ -83,7 +83,7 @@ namespace DataVerseManager.Models
             string searchUserName;
             Console.Write("Please write your username: ");
             searchUserName = Console.ReadLine();
-         
+
             User thisUser = RegisteredUsers.Find(user =>
                 string.Equals(user.Name, searchUserName, StringComparison.OrdinalIgnoreCase));
 
@@ -103,14 +103,14 @@ namespace DataVerseManager.Models
         public static void LoadLogInMenu()
         {
             // Welcome player
-            AnsiConsole.MarkupLine("[yellow]🏀 -- NBA ShowTime 2K26 -- 🏀[/]");
+            AnsiConsole.MarkupLine("[#ffa500]🏀 -- NBA ShowTime 2K26 -- 🏀[/]");
             string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                .Title($"Would you like to log-in to a pre-existing account or register a new account?")
+                .Title($"[#705050]Would you like to log-in to a pre-existing account or register a new account?[/]")
                 .AddChoices(
-                "Log-In", "Register", "Forgot Password", "Exit Application"
+                "Log-In", "Register", "Forgot Password", "Erase Account", "[#303030]Debug[/]", "Exit Application"
                 ));
 
-            switch(choice)
+            switch (choice)
             {
                 case "Log-In":
                     Console.Clear();
@@ -121,7 +121,16 @@ namespace DataVerseManager.Models
                     RegisterAccount();
                     break;
                 case "Forgot Password":
+                    Console.Clear();
                     ForgotPassword();
+                    break;
+                case "Erase Account":
+                    Console.Clear();
+                    EraseAccount();
+                    break;
+                case "Debug":
+                    Console.Clear();
+                    RunDebug();
                     break;
                 case "Exit Application":
                     Console.Clear();
@@ -132,6 +141,34 @@ namespace DataVerseManager.Models
                     break;
             }
         }
+
+        private static void RunDebug()
+        {
+            string ourSecretPassword = "flyhigh";
+            AnsiConsole.MarkupLine($"[red]Only authorized staff is allowed from this point, " +
+                $"\nplease enter password to confirm your identity:  [/]");
+
+            string entry = ReadHiddenPassword();
+
+            if(entry != ourSecretPassword)
+            {
+                Console.Clear();
+                Console.WriteLine("Incorrect password! Booting back to menu!");
+                Console.ReadLine();
+                Console.Clear();
+                return;
+            }
+
+            RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
+            
+            foreach(User user in RegisteredUsers)
+            {
+                Console.WriteLine(user.ReturnUserInformation());
+            }
+            Console.ReadLine();
+            Console.Clear();
+        }
+
         public static void LogInAccount()
         {
             // Load json
@@ -139,9 +176,9 @@ namespace DataVerseManager.Models
 
             // Declare user on top of the scope
             User thisUser = new User();
-            
+
             bool noInputName = true;
-            
+
             while (noInputName)
             {
                 string nameInput;
@@ -163,7 +200,7 @@ namespace DataVerseManager.Models
                     try
                     {
                         // Set user object to listed object
-                        thisUser = RegisteredUsers.Find(user => string.Equals(user.Name, 
+                        thisUser = RegisteredUsers.Find(user => string.Equals(user.Name,
                             nameInput, StringComparison.OrdinalIgnoreCase));
                         // Else successfull and exist the loop
                         noInputName = false;
@@ -175,7 +212,7 @@ namespace DataVerseManager.Models
             bool noInputPassword = true;
             while (noInputPassword)
             {
-                             
+
                 // Prompt the user to enter their password
                 Console.Write("Please enter your password: ");
                 string passwordInput = ReadHiddenPassword();
@@ -189,7 +226,7 @@ namespace DataVerseManager.Models
                 // Encrypt the salted password input
                 string encryptedInput = PasswordEncryptor(saltedPasswordInput); // Nemo_100#0
 
-                
+
                 // Compare with the stored password
                 if (thisUser.Password != encryptedInput)
                 {
@@ -208,7 +245,7 @@ namespace DataVerseManager.Models
                     noInputPassword = false;
                 }
             }
-            }
+        }
         public static void RegisterAccount()
         {
             //Ask user for their prefered password
@@ -235,7 +272,7 @@ namespace DataVerseManager.Models
                 Console.WriteLine("Please enter your prefered username: ");
                 string newName = Console.ReadLine();
 
-                if (RegisteredUsers.Any(user => user.Name == newName)) 
+                if (RegisteredUsers.Any(user => user.Name == newName))
                 {
                     Console.WriteLine("Username already exists, please try another username!");
                     Console.ReadLine();
@@ -282,7 +319,7 @@ namespace DataVerseManager.Models
                         hasLower = true;
                     else if (char.IsUpper(c))
                         hasUpper = true;
-                    else if (!char.IsLetterOrDigit(c)) 
+                    else if (!char.IsLetterOrDigit(c))
                         hasSpecial = true;
                 }
                 if (hasLower && hasUpper && hasSpecial)
@@ -295,13 +332,25 @@ namespace DataVerseManager.Models
                     )
                     );
 
-                  
+
                     if (yesOrNo == "Yes")
                     {
                         // We create our own custom salt, it takes the hashtag and combines it with
                         // the newUsers ID (which in this case it its position in the RegisterUser list count)
-                        int newID = RegisteredUsers.Count();
-                        string salt = ("#" + newID);
+                        int newId = 0;
+
+                        // Extract all existing IDs into a HashSet for fast lookup
+                        HashSet<int> usedIds = new HashSet<int>(RegisteredUsers.Select(u => u.Id));
+
+                        // Find the first free ID starting from 0
+                        while (usedIds.Contains(newId))
+                        {
+                            newId++;
+                        }
+
+                        newUser.Id = newId;
+
+                        string salt = ("#" + newId);
                         // Password with added salt set:
                         string passwordWithSalt = (newPassword + salt);
                         // Encrypt password with salt:
@@ -318,18 +367,106 @@ namespace DataVerseManager.Models
                     }
                 }
                 else
-            {
-                Console.Write("Password must have at least one lowercase, one uppercase and one special character!");
+                {
+                    Console.Write("Password must have at least one lowercase, one uppercase and one special character!");
                     Console.ReadLine();
                     Console.Clear();
                 }
 
-        }
-            newUser.Id = RegisteredUsers.Count();
-            RegisteredUsers.Add(newUser);
+            }
+            if(RegisteredUsers.Count() == 0)
+            newUser.Id = 0;
+            else
+            {
+                int newId = 0;
+
+                // Extract all existing IDs into a HashSet for fast lookup
+                HashSet<int> usedIds = new HashSet<int>(RegisteredUsers.Select(u => u.Id));
+
+                // Find the first free ID starting from 0
+                while (usedIds.Contains(newId))
+                {
+                    newId++;
+                }
+
+                newUser.Id = newId;
+            }
+                RegisteredUsers.Add(newUser);
             JsonHandeler.SaveJson(RegisteredUsers, "registeredUsers.json");
         }
 
+        public static void EraseAccount()
+        {
+            RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
+            Console.Write("Please enter the username of the password you wish to Delete: ");
+            string readDelName = Console.ReadLine();
+            
+            User userToDelete = RegisteredUsers.Find(user => string.Equals(user.Name,
+                        readDelName, StringComparison.OrdinalIgnoreCase));
+
+            if (RegisteredUsers.Contains(userToDelete))
+            {
+                var yesOrNo = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+               .Title($"[yellow]{userToDelete.Name} will be deleted-- is this okay?[/]")
+               .AddChoices(
+               "Yes", "No"
+               )
+               );
+
+                if (yesOrNo == "Yes")
+                {
+                    var yesOrNo2 = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+               .Title("[red]This action cannot be undone if you proceed—are you sure?[/]")
+               .AddChoices(
+               "Yes", "No"
+               )
+               );
+
+                    if (yesOrNo2 == "Yes")
+                    {
+
+                        Console.Write($"Please confirm by entering {userToDelete.Name}'s password: ");
+                        string passwordInput = ReadHiddenPassword();
+
+                        // set salt
+                        string salt = ("#" + userToDelete.Id.ToString());
+
+                        // Append the reverse salt to the input before encrypting
+                        string saltedPasswordInput = passwordInput + salt;
+
+                        // Encrypt the salted password input
+                        string encryptedInput = PasswordEncryptor(saltedPasswordInput);
+
+                        if (userToDelete.Password == encryptedInput)
+                        {
+                            Console.WriteLine($"{userToDelete.Name}'s account has bee successfully deleted!");
+                            RegisteredUsers.Remove(userToDelete);
+                            JsonHandeler.SaveJson(RegisteredUsers, "registeredUsers.json");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Wrong password-- No actions were taken on the account!");
+                        }
+                    }
+                    else if (yesOrNo2 == "No")
+                    {
+                            Console.WriteLine("No actions were taken on the account!");
+                            return;
+                    }
+                }
+            else if(yesOrNo == "No")
+            {
+                    Console.WriteLine("No actions were taken on the account!");
+                    return;
+            }
+            }
+            else
+            {
+                Console.WriteLine("The user was not found!");
+            }
+        }
         public static string ReadHiddenPassword()
         {
             // Read the password into a string but show the user only "★" for each char
@@ -340,16 +477,16 @@ namespace DataVerseManager.Models
             ConsoleKeyInfo keyRead;
 
             bool isReadingPassword = true;
-            while(isReadingPassword)
+            while (isReadingPassword)
             {
-              // Read keys, if true it doesn't show the input by the user
-              keyRead = Console.ReadKey(true);
+                // Read keys, if true it doesn't show the input by the user
+                keyRead = Console.ReadKey(true);
 
                 // Save the key read to passwordPoll and show the char each time as "★"
                 if (!char.IsControl(keyRead.KeyChar))
                 {
                     passwordPoll += keyRead.KeyChar;
-                    Console.Write("★");
+                    AnsiConsole.Markup("[yellow]★[/]");
                 }
                 // Erase char in password if the lenght is 1 and up
                 else if (keyRead.Key == ConsoleKey.Backspace && passwordPoll.Length >= 1)
@@ -358,12 +495,12 @@ namespace DataVerseManager.Models
                     // \b is a back space that moves the cursor in Console back,
                     // makes a empty space (in other words replace the previous char with empty),
                     // and sets another step back to be at the position of the char before it to write ahead
-                    Console.Write("\b \b");
+                    AnsiConsole.Markup("\b \b");
                 }
                 // Press enter to confirm the current string
                 else if (keyRead.Key == ConsoleKey.Enter)
                 {
-                    Console.WriteLine();
+                    AnsiConsole.WriteLine();
                     Console.Clear();
                     isReadingPassword = false;
                 }
@@ -371,8 +508,6 @@ namespace DataVerseManager.Models
             // reutrn the poll of chars -- passworPoll as the new Password
             return passwordPoll;
         }
-    
-
     }
 }
 

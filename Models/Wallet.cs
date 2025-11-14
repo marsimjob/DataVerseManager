@@ -10,6 +10,10 @@ namespace DataVerseManager.Models
     {
         private double Balance;
 
+        public Wallet()
+        {
+            Balance = 0;
+        }
         public void UseMoney(double investment)
         {
             Balance -= investment;
@@ -21,6 +25,8 @@ namespace DataVerseManager.Models
         
         public double ReturnWalletBalance()
         {
+            if(Balance == null)
+            { return 0; }
             return Balance;
         }
         public void ShowWalletBalance()
