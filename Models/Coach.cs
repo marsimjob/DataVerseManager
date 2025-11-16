@@ -51,7 +51,6 @@ namespace DataVerseManager.Models
                 return;
             }
         }
-
         public void ChangeTeamName()
         {
             Console.WriteLine("Enter the new Name of your Team: ");

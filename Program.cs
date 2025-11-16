@@ -5,6 +5,7 @@ using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
+using DataVerseManager.UI;
 
 namespace DataVerseManager
 {
@@ -17,7 +18,6 @@ namespace DataVerseManager
             //AccountManager.LoadLogInMenu();
             BettingFunctionTest();
         }
-
 
         static void BettingFunctionTest()
         {
@@ -63,14 +63,19 @@ namespace DataVerseManager
             yourCoach.CoachTeam.WinRate = 27;
             yourCoach.CoachTeam.TeamName = "Crystals";
 
+            SpectreGeneric.LoadScreen();
             // LOW RANKERS
             Match.RunVisualMatch(Bulls, yourCoach.CoachTeam);
+            SpectreGeneric.LoadScreen();
             // IMBALANCED MATCH
             Match.RunVisualMatch(myCoach.CoachTeam, Bulls);
+            SpectreGeneric.LoadScreen();
             // MID RANKERS
             Match.RunVisualMatch(Heat, Warriors);
+            SpectreGeneric.LoadScreen();
             // HIGH RANKERS
             Match.RunVisualMatch(Lakers, Knicks);
+            SpectreGeneric.LoadScreen();
         }
     }
 }
