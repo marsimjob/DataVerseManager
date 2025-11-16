@@ -1,34 +1,98 @@
-﻿using System;
+﻿using DataVerseManager.Services;
+using NJsonSchema.Validation.FormatValidators;
+using SixLabors.ImageSharp.Metadata.Profiles.Exif;
+using Spectre.Console;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-
+using static DataVerseManager.Models.Leaderboard;
 namespace DataVerseManager.Models
 {
     public class Match
     {
         // Attributes
         // Match date, when did the match play?
-       public  DateTime MatchTime {  get; set; }
+        public DateTime MatchTime { get; set; }
 
         // What teams played that match?
         public string TeamOne { get; set; }
-        public string TeamTwo {  get; set; }
+        public string TeamTwo { get; set; }
 
         // What was the final scores?
         public int OneScore { get; set; }
         public int TwoScore { get; set; }
 
-        // Constructor
-        public Match(DateTime matchTime, string teamOne, string teamTwo, int oneScore, int twoScore)
-        {
-            MatchTime = matchTime;
-            TeamOne = teamOne;
-            TeamTwo = teamTwo;
-            OneScore = oneScore;
-            TwoScore = twoScore;
+        // For randomization over the match objects life time
+        private static Random rng = new Random();
 
+        // Dialogue for matches (Stock up on random things to say that are positive for the commentators)
+        // KICK-OFF
+        static Dictionary<string, List<string>> kickOffLines = new Dictionary<string, List<string>>()
+{
+    {
+        "High", new List<string>()
+        {
+            "The arena falls silent as tension builds up...and the game is on!",
+            "The whistle blows! The clash of titans begins now!",
+            "The battle begins-- this is it! Who will rise and who will fall?"
+        }
+    },
+    {
+        "Mid", new List<string>()
+        {
+            "The game is underway-- both teams looking to set the tone right from the start.",
+            "The match begins, let's see how they open this match!",
+            "Tip-off is complete, this first quarter will be crucial for momentum."
+        }
+    },
+    {
+        "Low", new List<string>()
+        {
+            "And we're rolling! Let's hope nobody forgot their warm-up today!",
+            "Did someone call the fire department? These teams are on fire tonight!",
+            "I hope both teams had their cup of coffee this morning! Game on!"
+        }
+    },
+    {
+        "Imbalance", new List<string>()
+        {
+            "Hold up—what kind of match is this? One team is clearly outmatched!",
+            "Am I dreaming or are we being played? This match-up is all wrong but the game must go on!",
+            "Will this be the chance for the little guys to glow, or will the big leaguers eat them for breakfast?"
+        }
+    }
+};
+        // MID-GAME
+        static string[] offensive =
+        {
+        $" pushes forward aggressively!",
+        $" showing excellent teamwork!",
+        $" dominates the midfield!",
+        $" is overwhelming the opponent!"
+        };
+
+        static string[] defensive =
+        {
+        $" launches a counterattack!",
+        $" holding their ground!",
+        $" are showing a burst of energy!",
+        $" trying to regain control!"
+        };
+
+        static string[] fumbles =
+        {
+        "-- sloppy mistake! That could cost them!",
+        ", oh no! terrible misplay—- the crowd gasps!",
+        "! A fumble! The audience can't believe it!",
+        " completely missed that opportunity!"
+        };
+
+        // Constructor
+        public Match()
+        {
         }
 
         // Det här en funktion som simulerar en match mellan två lag och talar om vilket lag som vann.
@@ -37,38 +101,210 @@ namespace DataVerseManager.Models
 
         public static Team SimulateMatch(Team teamA, Team teamB)
         {
+            // THrow an error if any of the teams are invalid somehow
             if (teamA == null || teamB == null)
-                throw new ArgumentNullException("Team kan inte vara null.");
+            {
+                throw new InvalidOperationException("Match cannot be simulated with missing teams!");
+            }
 
-            // Skydda mot 0-winrate
+            // This protects for 0 divisions, it makes it so that it is impossible for a an outcome
+            // where if any of the team has 0 win rate state the equation will crash the program
             const double eps = 1e-9;
             double pA = Math.Max(teamA.WinRate, eps);
             double pB = Math.Max(teamB.WinRate, eps);
 
-            // Räkna ut sannolikheten för att lag A vinner
+            // Probability for teamA winning:
             double total = pA + pB;
             double probabilityA = pA / total;
 
-            // Skapa en slumpgenerator
-            Random random = new Random();
-            double randomValue = random.NextDouble(); // mellan 0 och 1
+            // Get random probability
+            double randomValue = rng.NextDouble();
 
-            // Om randomvärdet är mindre än sannolikheten → teamA vinner
             if (randomValue < probabilityA)
             {
-                Console.WriteLine($"{teamA.TeamName} vann matchen!");
+                //Console.WriteLine($"{teamA.TeamName} vann matchen!");
                 return teamA;
             }
             else
             {
-                Console.WriteLine($"{teamB.TeamName} vann matchen!");
+                //Console.WriteLine($"{teamB.TeamName} vann matchen!");
                 return teamB;
             }
         }
+        public static void RunVisualMatch(Team teamA, Team teamB)
+        {
+            // Get a match time total so we can start a game clock that ticks down
+            int matchDuration = 30;
+            // Use remaining time to gauge the time when ticking down on each update
+            int remainingTime = matchDuration;
 
+            string currentMessage = GetIntroLine(teamA, teamB);
 
+            // Use our SimulateMatch() function to get the winning team in advance
+            // the idea of this method it's all just for show and pretend to play a match
+            // despite knowing the outcome in advance!
+            // Get winner
+            Team winner = SimulateMatch(teamA, teamB);
+            // Get Loser
+            Team loser;
+            if (winner == teamA)
+            {
+                loser = teamB;
+            }
+            else
+            {
+                loser = teamA;
+            }
 
+            // Set scores to zero
+            int OneScore = 0;
+            int TwoScore = 0;
 
+            // Live UI section, this displays everything live with Spectre.Console
+            AnsiConsole.Live(new Table())
+                .Start(ctx =>
+                {
+                    while (remainingTime >= 0)
+                    {
+                        // Build scoreboard table
+                        var table = new Table()
+                            .Border(TableBorder.Rounded)
+                            .Title($"[bold red]Match: {teamA.TeamName} vs {teamB.TeamName}[/]");
 
+                        table.AddColumn($"[bold]{teamA.TeamName}[/]");
+                        table.AddColumn("[bold]TIME[/]");
+                        table.AddColumn($"[bold]{teamB.TeamName}[/]");
+
+                        table.AddRow(
+                            $"[white]Home Score[/]: [bold red]{OneScore}[/]",
+                            $"Remaining: [bold yellow]{remainingTime}[/]",
+                            $"[white]Visitor Score[/]: [bold red]{TwoScore}[/]"
+                        );
+
+                        // Message panel
+                        var messagePanel = new Panel(currentMessage)
+                            .Padding(1, 1)
+                            .Border(BoxBorder.Rounded)
+                            .Header("[bold yellow]Commentator[/]");
+
+                        // Update UI
+                        var layout = new Layout()
+                            .SplitRows(
+                                new Layout("scoreboard").Size(7).Update(table),
+                                new Layout("commentary").Update(messagePanel)
+                            );
+
+                        ctx.UpdateTarget(layout);
+
+                        // Finish message
+                        if (remainingTime <= 1)
+                        {
+                            currentMessage = $"[bold green]Game Set! {winner.TeamName} Win![/]";
+                        }
+                        else
+                        {
+                            // Every 5 seconds you get some commentary from the game
+                            if (remainingTime % 5 == 0 && remainingTime != matchDuration)
+                            {
+                                // Roll for what team's progress to be shown
+                                int roll = rng.Next(0, 10);
+
+                                // 50% chance for a message for either team's performance
+                                if (roll < 5)
+                                {
+                                    // The winning team has higher roles of success but they can fumble
+                                    int roll2 = rng.Next(0, 10);
+                                    
+                                    // Low chance to fumble for the winning team, only 20%
+                                    if (roll2 < 2)
+                                        currentMessage = $"{winner.TeamName}{fumbles[rng.Next(fumbles.Length)]}";
+                                    // 40% chance of some offensive performance
+                                    else if (roll2 < 6)
+                                        currentMessage = $"{winner.TeamName}{offensive[rng.Next(offensive.Length)]}";
+                                    // Defensive perforamance message is 40%
+                                    else
+                                        currentMessage = $"{winner.TeamName}{defensive[rng.Next(defensive.Length)]}";
+                                }
+                                // 50% chance for the losing team
+                                else
+                                {
+                                    // Losing team has a different spread of chances, higher to fumble and less offensively
+                                    int roll2 = rng.Next(0, 10);
+
+                                    // Higher rate of fumbling when a team is losing-- 40%
+                                    if (roll2 < 4)
+                                        currentMessage = $"{loser.TeamName}{fumbles[rng.Next(fumbles.Length)]}";
+                                    // 20% chance of some offensive performance
+                                    else if (roll2 < 6)
+                                        currentMessage = $"{loser.TeamName}{offensive[rng.Next(offensive.Length)]}";
+                                    // Defensive perforamance message is 40%
+                                    else
+                                        currentMessage = $"{loser.TeamName}{defensive[rng.Next(defensive.Length)]}";
+                                }
+                            }
+                            // Commentary every 2 seconds, the winner team has higher percentage chance to get score 
+                            // every other second
+                            if (remainingTime % 2 == 0 && remainingTime != matchDuration)
+                            {
+                                // Winner gets higher probability
+                                bool winnerScores = rng.NextDouble() < 0.70;  // 70% chance
+                                bool loserScores = rng.NextDouble() < 0.20;  // 20% chance
+
+                                if (winnerScores)
+                                {
+                                    if (winner == teamA) OneScore += rng.Next(1, 3); // +1 or +2
+                                    else TwoScore += rng.Next(1, 3);
+                                }
+
+                                if (loserScores)
+                                {
+                                    if (winner == teamA) TwoScore += rng.Next(1, 3);
+                                    else OneScore += rng.Next(1, 3);
+                                }
+                            }
+                        }
+                        Thread.Sleep(1000);
+                        remainingTime--;
+                    }
+                });
+
+        }
+        private static string GetIntroLine(Team teamA, Team teamB)
+        {
+            string introComment = "";
+
+            // Which lines should be use is decided by treshholds of teams power levels
+            List<string> chosenLines = new List<string>();
+            // Level key to access dictionary in DialogueContainer
+            string levelKey = "";
+            // Make treshholds
+            if     // Too strong vs Too Weak Matches
+               ((teamA.WinRate >= 50 && teamB.WinRate <= 35) ||
+               ((teamA.WinRate <= 35 && teamB.WinRate >= 50)) ||
+               (teamA.WinRate >= 70 && teamB.WinRate <= 50) ||
+               ((teamA.WinRate <= 50 && teamB.WinRate >= 70)))
+                levelKey = "Imbalance";
+            else if // Top tier team matches
+                (teamA.WinRate >= 70 && teamB.WinRate >= 70)
+                levelKey = "High";
+            else if // Mid tier team matches
+                ((teamA.WinRate >= 70 && teamB.WinRate <= 70) ||
+                (teamA.WinRate <= 70 && teamB.WinRate >= 70) ||
+                (teamA.WinRate >= 35 && teamB.WinRate >= 35))
+                levelKey = "Mid";
+            else   // Low tier team matches
+                levelKey = "Low";
+
+            // Set the collection of lines to chosenLines
+            chosenLines = kickOffLines[levelKey];
+            // Random index from from chosenLines string count
+            int index = rng.Next(chosenLines.Count);
+            // Set one of the strings to introComment
+            introComment = kickOffLines[levelKey][index];
+
+            return introComment;
+
+        }
     }
 }
+       

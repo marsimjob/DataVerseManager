@@ -167,7 +167,7 @@ namespace DataVerseManager.Models
                 }
 
                 AnsiConsole.MarkupLine($"\nPlacing a bet of [green]${betAmount}[/] on [blue]{teamName}[/]...");
-
+             
                 Team Winningteam = Match.SimulateMatch(team1, team2);
 
                 if (Winningteam.TeamName == teamName)

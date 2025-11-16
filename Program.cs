@@ -13,8 +13,9 @@ namespace DataVerseManager
         static void Main(string[] args)
         {
             //AccountManager.RegisteredUsers = JsonHandeler.LoadJson("registeredUsers.json");
-            Console.OutputEncoding = Encoding.UTF8;
-            AccountManager.LoadLogInMenu();
+            //Console.OutputEncoding = Encoding.UTF8;
+            //AccountManager.LoadLogInMenu();
+            BettingFunctionTest();
         }
 
 
@@ -40,44 +41,36 @@ namespace DataVerseManager
             Console.WriteLine(Lakers.WinRate);
             Console.ReadLine();
 
-            Heat.WinRate = 51;
-            Knicks.WinRate = 29;
+            Heat.WinRate = 73;
+            Knicks.WinRate = 90;
             Warriors.WinRate = 52;
-            Bulls.WinRate = 37;
+            Bulls.WinRate = 31;
 
             // Put this in a wallet and make it track with json etc
             // User --- Wallet as attribute?
             double bettingCash = 10000;
 
             Coach myCoach = new Coach();
+            Coach yourCoach = new Coach();
 
             myCoach.UserWallet.GetMoney(bettingCash);
             myCoach.CoachName = "Nemo";
             myCoach.CoachTeam.WinRate = 67;
             myCoach.CoachTeam.TeamName = ".NETters";
 
-            Betting.PlaceBet(Lakers, Bulls, myCoach);
-            myCoach.UserWallet.ShowWalletBalance();
-            Console.ReadLine();
-            Console.Clear();
+            yourCoach.UserWallet.GetMoney(bettingCash);
+            yourCoach.CoachName = "Bavel";
+            yourCoach.CoachTeam.WinRate = 27;
+            yourCoach.CoachTeam.TeamName = "Crystals";
 
-            Betting.PlaceBet(Heat, Warriors, myCoach);
-            myCoach.UserWallet.ShowWalletBalance();
-            Console.ReadLine();
-            Console.Clear();
-
-            Betting.PlaceBet(Bulls, myCoach.CoachTeam, myCoach);
-            myCoach.UserWallet.ShowWalletBalance();
-            Console.ReadLine();
-            Console.Clear();
-
-            Betting.PlaceBet(Knicks, Heat, myCoach);
-            myCoach.UserWallet.ShowWalletBalance();
-            Console.ReadLine();
-            Console.Clear();
-
-            Betting.PrintMoney(myCoach.UserWallet.ReturnWalletBalance());
-
+            // LOW RANKERS
+            Match.RunVisualMatch(Bulls, yourCoach.CoachTeam);
+            // IMBALANCED MATCH
+            Match.RunVisualMatch(myCoach.CoachTeam, Bulls);
+            // MID RANKERS
+            Match.RunVisualMatch(Heat, Warriors);
+            // HIGH RANKERS
+            Match.RunVisualMatch(Lakers, Knicks);
         }
     }
 }
