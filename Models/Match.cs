@@ -2,6 +2,7 @@
 using NJsonSchema.Validation.FormatValidators;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using Spectre.Console;
+using Spectre.Console.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,6 +91,8 @@ namespace DataVerseManager.Models
         " completely missed that opportunity!"
         };
 
+
+
         // Constructor
         public Match()
         {
@@ -160,41 +163,77 @@ namespace DataVerseManager.Models
             int OneScore = 0;
             int TwoScore = 0;
 
-            // Live UI section, this displays everything live with Spectre.Console
-            AnsiConsole.Live(new Table())
+            // Prep court layouts
+            int courtHeight = 18;
+            int courtLength = 113;
+            var courts = GenerateRandomCourts(courtHeight,courtLength,count: 20);
+
+            AnsiConsole.Live(new Panel(" "))  // initial placeholder
                 .Start(ctx =>
                 {
-                    while (remainingTime >= 0)
-                    {
-                        // Build scoreboard table
-                        var table = new Table()
-                            .Border(TableBorder.Rounded)
-                            .Title($"[bold red]Match: {teamA.TeamName} vs {teamB.TeamName}[/]");
-
-                        table.AddColumn($"[bold]{teamA.TeamName}[/]");
-                        table.AddColumn("[bold]TIME[/]");
-                        table.AddColumn($"[bold]{teamB.TeamName}[/]");
-
-                        table.AddRow(
-                            $"[white]Home Score[/]: [bold red]{OneScore}[/]",
-                            $"Remaining: [bold yellow]{remainingTime}[/]",
-                            $"[white]Visitor Score[/]: [bold red]{TwoScore}[/]"
+                    // Create layout once
+                    var layout = new Layout("root")
+                        .SplitRows(
+                            new Layout("scoreboard").Size(8),
+                            new Layout("court").Size(courtHeight),
+                            new Layout("commentary")
                         );
 
-                        // Message panel
+                    while (remainingTime >= 0)
+                    {
+                        // Scoreboard Table
+                        var table = new Table()
+                            .Border(TableBorder.Rounded)
+                            .Title($"[bold red]Match: {teamA.TeamName} vs {teamB.TeamName}[/]")
+                            .Centered();
+
+                        table.AddColumn(new TableColumn($"[bold][white]HOME[/]\n{teamA.TeamName}[/]").Centered());
+                        table.AddColumn(new TableColumn("[bold]TIME[/]").Centered());
+                        table.AddColumn(new TableColumn($"[bold][white]VISITOR[/]\n{teamB.TeamName}[/]").Centered());
+                        table.AddRow(
+                            $"[green]Score[/]: [bold red]{OneScore}[/]",
+                            $"Remaining: [bold yellow]{remainingTime}[/]",
+                            $"[green]Score[/]: [bold red]{TwoScore}[/]"
+                        );
+
+                        // Court View 
+                        // Pick a random / changing court layout
+                        var courtIndex = remainingTime % courts.Count;
+                        var courtRows = courts[courtIndex];
+
+                        // Style each row: wrap the spaces + emojis in markup with orange background
+                        var styledRows = courtRows
+                            .Select(row => $"[white on orange1]{row}[/]")
+                            .ToArray();
+                        var content = string.Join(Environment.NewLine, styledRows);
+
+                        // Create a panel using that styled content
+                        var courtPanel = new Panel(content)
+                            .Padding(1, 1)
+                            .Border(BoxBorder.Rounded)
+                            .Header("[bold red]Court View[/]")
+                            .Expand();
+
+                        // Adjusting clipping here so it doesnt go over scoreboard table
+                        var court = new Align(courtPanel, HorizontalAlignment.Center, VerticalAlignment.Top)
+                            .Height(courtHeight);
+
+                        // Commentary Pannel
                         var messagePanel = new Panel(currentMessage)
                             .Padding(1, 1)
                             .Border(BoxBorder.Rounded)
-                            .Header("[bold yellow]Commentator[/]");
+                            .Header("[bold yellow]Commentator[/]")
+                            .Expand();
 
-                        // Update UI
-                        var layout = new Layout()
-                            .SplitRows(
-                                new Layout("scoreboard").Size(7).Update(table),
-                                new Layout("commentary").Update(messagePanel)
-                            );
+                        // Update layout parts
 
+                        layout["court"].Update(court);
+                        layout["scoreboard"].Update(table);
+                        layout["commentary"].Update(messagePanel);
+
+                        // Update the live target
                         ctx.UpdateTarget(layout);
+                        ctx.Refresh();
 
                         // Finish message
                         if (remainingTime <= 1)
@@ -304,6 +343,75 @@ namespace DataVerseManager.Models
 
             return introComment;
 
+        }
+   
+        // Generates courtRows in random string array layouts for fake basketball
+        public static List<string[]> GenerateRandomCourts(int rows, int collumns, int count = 10)
+        {
+            var courtRows = new List<string[]>(count);
+
+            for (int i = 0; i < count; i++)
+            {
+                // A string array that is empty, with court height
+                var court = new string[rows];
+                for (int row = 0; row < rows; row++)
+                {
+                    court[row] = new string(' ', collumns);
+                }
+
+                // Function to place an emoji at a random position in court
+                void PlaceAt(string emoji)
+                {
+                    int rowPos = rng.Next(rows);
+                    int heightPos = rng.Next(collumns);
+
+                    // Convert the row to a char array / string builder to modify it
+                    var fullArray = court[rowPos].ToCharArray();
+
+                    // Build string with substrings;
+                    string originalRow = court[rowPos];
+
+                    // Part before insertion
+                    string before = originalRow.Substring(0, heightPos);
+
+                    // The emoji to insert
+                    string toInsert = emoji;
+
+                    // Part after insertion point
+                    string afterString;
+                    int insertEnd = heightPos + emoji.Length;
+                    if (insertEnd < originalRow.Length)
+                    {
+                        afterString = originalRow.Substring(insertEnd);
+                    }
+                    else
+                    {
+                        afterString = "";  // nothing after if emoji would go beyond end
+                    }
+
+                    // Combine them
+                    string newRow = before + toInsert + afterString;
+
+                    // Write it back
+                    court[rowPos] = newRow;
+                }
+
+                // Place the 10 players
+                for (int player = 0; player < 10; player++)
+                {
+                    PlaceAt("⛹🏽");
+                }
+
+                // Place balls
+                for (int ball = 0; ball < 1; ball++)
+                {
+                    PlaceAt("🏀");
+                }
+
+                courtRows.Add(court);
+            }
+
+            return courtRows;
         }
     }
 }

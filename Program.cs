@@ -1,11 +1,12 @@
 ﻿using DataVerseManager.Models;
 using DataVerseManager.Services;
+using DataVerseManager.UI;
+using Spectre.Console;
 using System;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
-using DataVerseManager.UI;
 
 namespace DataVerseManager
 {
@@ -16,7 +17,11 @@ namespace DataVerseManager
             //AccountManager.RegisteredUsers = JsonHandeler.LoadJson("registeredUsers.json");
             //Console.OutputEncoding = Encoding.UTF8;
             //AccountManager.LoadLogInMenu();
+            Console.InputEncoding = System.Text.Encoding.UTF8;
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             BettingFunctionTest();
+      
+
         }
 
         static void BettingFunctionTest()
@@ -63,7 +68,6 @@ namespace DataVerseManager
             yourCoach.CoachTeam.WinRate = 27;
             yourCoach.CoachTeam.TeamName = "Crystals";
 
-            SpectreGeneric.LoadScreen();
             // LOW RANKERS
             Match.RunVisualMatch(Bulls, yourCoach.CoachTeam);
             SpectreGeneric.LoadScreen();

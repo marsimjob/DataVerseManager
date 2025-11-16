@@ -11,8 +11,6 @@ namespace DataVerseManager.UI
     {
         public static void LoadScreen()
         {
-            Console.InputEncoding = System.Text.Encoding.UTF8;
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.Clear();
             AnsiConsole.Status()
            .Spinner(Spinner.Known.Aesthetic)       
