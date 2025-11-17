@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using Spectre.Console;
 namespace DataVerseManager.Models
 {
     /// <summary>
@@ -43,11 +43,6 @@ namespace DataVerseManager.Models
             if (!string.IsNullOrWhiteSpace(key1)) KeyWordList.Add(key1);
             if (!string.IsNullOrWhiteSpace(key2)) KeyWordList.Add(key2);
             if (!string.IsNullOrWhiteSpace(key3)) KeyWordList.Add(key3);
-        }
-
-        public Rule(Markup subtitle)
-        {
-            this.subtitle = subtitle;
         }
     }
 }

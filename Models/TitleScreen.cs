@@ -1,7 +1,6 @@
 ﻿using Spectre.Console;
 using System;
 using System.Threading;
-
 namespace DataVerseManager.Models
 {
     public class TitleScreen
@@ -10,7 +9,7 @@ namespace DataVerseManager.Models
         {
             AnsiConsole.Clear();
 
-            var image = new Spectre.Console.CanvasImage("Nba2k26.png")
+            var image = new Spectre.Console.CanvasImage("images/Nba2k26.png")
                 .MaxWidth(50).NearestNeighborResampler();
 
             var title = new FigletText("Nba ShowTime")

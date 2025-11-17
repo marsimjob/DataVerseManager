@@ -17,20 +17,16 @@ namespace DataVerseManager
             //AccountManager.RegisteredUsers = JsonHandeler.LoadJson("registeredUsers.json");
             //Console.OutputEncoding = Encoding.UTF8;
             //AccountManager.LoadLogInMenu();
+            // TitleScreen titleScreen = new TitleScreen();
+            //  titleScreen.ShowSplashScreen();
+
+            RuleBook.SearchRule();
+            SpectreGeneric.LoadScreen();
             Console.InputEncoding = System.Text.Encoding.UTF8;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             BettingFunctionTest();
-      
 
         }
-
-
-        {
-            TitleScreen titleScreen = new TitleScreen();
-
-            titleScreen.ShowSplashScreen();
-
-
 
 
 
