@@ -6,10 +6,14 @@ using System.Threading.Tasks;
 
 namespace DataVerseManager.Models
 {
-    internal class Wallet
+    public class Wallet
     {
         private double Balance;
 
+        public Wallet()
+        {
+            Balance = 0;
+        }
         public void UseMoney(double investment)
         {
             Balance -= investment;
@@ -17,6 +21,17 @@ namespace DataVerseManager.Models
         public void GetMoney(double profit)
         {
             Balance += profit;
+        }
+        
+        public double ReturnWalletBalance()
+        {
+            if(Balance == null)
+            { return 0; }
+            return Balance;
+        }
+        public void ShowWalletBalance()
+        {
+            Console.WriteLine(Balance + " in wallet currently!");
         }
     }
 }

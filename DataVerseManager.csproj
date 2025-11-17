@@ -10,8 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.54.0" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.53.1-preview.0.2" />
-    <PackageReference Include="Spectre.Console.ImageSharp" Version="0.54.0" />
-    <PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+    <PackageReference Include="Spectre.Console.ImageSharp" Version="0.53.1-preview.0.2" />
   </ItemGroup>
 
 </Project>
