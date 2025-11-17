@@ -44,5 +44,10 @@ namespace DataVerseManager.Models
             if (!string.IsNullOrWhiteSpace(key2)) KeyWordList.Add(key2);
             if (!string.IsNullOrWhiteSpace(key3)) KeyWordList.Add(key3);
         }
+
+        public Rule(Markup subtitle)
+        {
+            this.subtitle = subtitle;
+        }
     }
 }
