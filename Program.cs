@@ -24,6 +24,18 @@ namespace DataVerseManager
 
         }
 
+
+        {
+            TitleScreen titleScreen = new TitleScreen();
+
+            titleScreen.ShowSplashScreen();
+
+
+
+
+
+         
+
         static void BettingFunctionTest()
         {
             Team Lakers = new Team();
@@ -81,6 +93,8 @@ namespace DataVerseManager
             Match.RunVisualMatch(Lakers, Knicks);
             SpectreGeneric.LoadScreen();
         }
+
     }
 }
+            
 
