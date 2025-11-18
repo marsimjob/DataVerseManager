@@ -16,7 +16,14 @@ namespace DataVerseManager.Models
         private static Random rng = new Random();
 
         public static Team currentWinner = new Team();
-
+        public static Color[] courtColors ={
+        Color.FromHex("#0F2E2C"),  
+        Color.FromHex("#2E4632"),  
+        Color.FromHex("#1F1912"),  
+        Color.FromHex("#182428"),  
+        Color.FromHex("#15181A"),  
+        Color.FromHex("#100E0D")  
+         };
         // Dialogue for matches (Stock up on random things to say that are positive for the commentators)
         // KICK-OFF
         static Dictionary<string, List<string>> kickOffLines = new Dictionary<string, List<string>>()
@@ -132,7 +139,7 @@ namespace DataVerseManager.Models
                 return teamA;
             }
             else
-            { 
+            {
                 // Opposite for losing team
                 foreach (var player in teamA.TeamPlayer)
                 {
@@ -198,6 +205,10 @@ namespace DataVerseManager.Models
             int courtLength = 113;
             var courts = GenerateRandomCourts(courtHeight, courtLength, count: 20);
 
+            // Randomize court color
+            int courtColorIndex = rng.Next(courtColors.Length);
+            Color randomColor = courtColors[courtColorIndex];
+
             AnsiConsole.Live(new Panel(" "))  // initial placeholder
                 .Start(ctx =>
                 {
@@ -233,7 +244,7 @@ namespace DataVerseManager.Models
 
                         // Style each row: wrap the spaces + emojis in markup with orange background
                         var styledRows = courtRows
-                            .Select(row => $"[white on orange1]{row}[/]")
+                            .Select(row => $"[white on #{randomColor.ToHex()}]{row}[/]")
                             .ToArray();
                         var content = string.Join(Environment.NewLine, styledRows);
 
@@ -272,6 +283,7 @@ namespace DataVerseManager.Models
                         if (remainingTime < 1)
                         {
                             currentMessage = $"[bold green]Game Set! {winner.TeamName} Win![/]";
+
                         }
                         else
                         {
@@ -339,6 +351,7 @@ namespace DataVerseManager.Models
                     Match thisMatch = new Match(DateTime.Now, teamA, teamB, OneScore, TwoScore, Matchboard.Matchboards.Count);
                     Matchboard.Matchboards.Add(thisMatch);
                     JsonHandeler.SaveJson<List<Match>>(Matchboard.Matchboards, "matchboards.json");
+                    Console.Clear();
                 });
 
         }
@@ -386,66 +399,62 @@ namespace DataVerseManager.Models
 
             for (int i = 0; i < count; i++)
             {
-                // A string array that is empty, with court height
                 var court = new string[rows];
+
+                // Fill with empty spaces
                 for (int row = 0; row < rows; row++)
                 {
                     court[row] = new string(' ', collumns);
                 }
 
-                // Function to place an emoji at a random position in court
-                void PlaceAt(string emoji)
-                {
-                    int rowPos = rng.Next(rows);
-                    int heightPos = rng.Next(collumns);
-
-                    // Convert the row to a char array / string builder to modify it
-                    var fullArray = court[rowPos].ToCharArray();
-
-                    // Build string with substrings;
-                    string originalRow = court[rowPos];
-
-                    // Part before insertion
-                    string before = originalRow.Substring(0, heightPos);
-
-                    // The emoji to insert
-                    string toInsert = emoji;
-
-                    // Part after insertion point
-                    string afterString;
-                    int insertEnd = heightPos + emoji.Length;
-                    if (insertEnd < originalRow.Length)
-                    {
-                        afterString = originalRow.Substring(insertEnd);
-                    }
-                    else
-                    {
-                        afterString = "";  // nothing after if emoji would go beyond end
-                    }
-
-                    // Combine them
-                    string newRow = before + toInsert + afterString;
-
-                    // Write it back
-                    court[rowPos] = newRow;
-                }
-
-                // Place the 10 players
+                // Place 10 players
                 for (int player = 0; player < 10; player++)
                 {
-                    PlaceAt("⛹🏽");
+                    PlaceAt("🏃", rows, collumns, court);
                 }
 
-                // Place balls
-                for (int ball = 0; ball < 1; ball++)
-                {
-                    PlaceAt("🏀");
-                }
+                // Place 1 ball
+                PlaceAt("🏀", rows, collumns, court);
 
+                // Add this court to the list
                 courtRows.Add(court);
             }
 
-            return courtRows;
+            return courtRows;  // <-- Now correctly outside the loop
         }
+
+        // Function to place an emoji at a random position in court
+        public static void PlaceAt(string emoji, int rows, int columns, string[] court)
+        {
+            int rowPos = rng.Next(rows);
+            int colPos = rng.Next(columns);
+
+            // If placing a ball, check for collision with a player
+            if (emoji == "🏀")
+            {
+                // Try to find an empty spot (max rows attempts)
+                for (int attempt = 0; attempt < rows; attempt++)
+                {
+                    if (court[rowPos][colPos] == ' ')
+                        break; // empty, safe to place
+
+                    rowPos = (rowPos + 1) % rows; // move 1 row down
+                }
+            }
+
+            // Convert row to char array for safe editing
+            var rowChars = court[rowPos].ToCharArray();
+
+            // Ensure column does not go out of bounds
+            if (colPos >= columns) colPos = columns - 1;
+
+            // Insert the emoji
+            string before = new string(rowChars, 0, colPos);
+            string after = (colPos + emoji.Length < rowChars.Length)
+                ? new string(rowChars, colPos + emoji.Length, rowChars.Length - colPos - emoji.Length)
+                : "";
+            court[rowPos] = before + emoji + after;
+        }
+
     }
-}
+    }
