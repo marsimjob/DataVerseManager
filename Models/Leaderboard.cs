@@ -3,55 +3,47 @@ using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 
 namespace DataVerseManager.Models
 {
-    public class Leaderboard // Klassen som sköter allt i programmet
+    public class Leaderboard
     {
+        // A list that holds all teams in the leaderboard
+        private List<Team> teams = new List<Team>();
 
-
-        // En lista som håller alla lag i leaderboarden
-        private System.Collections.Generic.List<Team> teams = new System.Collections.Generic.List<Team>();
-
-        // ---------- INRE KLASS SOM BESKRIVER ETT LAG ----------
-
+        // ---------- INNER CLASS THAT DESCRIBES A TEAM ----------
         public class Team
         {
-            public string TeamName { get; set; } = string.Empty; // Namnet på laget
-            public int TeamWins { get; set; }                     // Antal vinster
-            public int TeamLoses { get; set; }                    // Antal förluster
-            public double WinRate { get; set; }                   // W/L-förhållande (vinster per förlust)
+            public string TeamName { get; set; } = string.Empty; // Name of the team
+            public int TeamWins { get; set; }                     // Number of wins
+            public int TeamLoses { get; set; }                    // Number of losses
+            public double WinRate { get; set; }                   // Win/Loss ratio (wins per loss)
         }
 
-        // ---------- STARTPUNKT FÖR LEADERBOARD ----------
-
+        // ---------- START POINT FOR THE LEADERBOARD ----------
         public void Run()
         {
-            // 1. Skapa alla lag (med 0 vinster och förluster)
+            // 1. Create all teams (with 0 wins and 0 losses)
             CreateDefaultTeams();
 
-            // 2. Lägg till några exempelmatcher för att visa funktionen (Dummy data)
-            RecordGame("Lakers", "Celtics");   // Lakers vinner mot Celtics
-            RecordGame("Warriors", "Heat");    // Warriors vinner mot Heat
-            RecordGame("Knicks", "Bulls");     // Knicks vinner mot Bulls
-            RecordGame("Warriors", "Lakers");  // Warriors vinner mot Lakers
+            // 2. Add some example games to show functionality (dummy data)
+            RecordGame("Lakers", "Celtics");   // Lakers win against Celtics
+            RecordGame("Warriors", "Heat");    // Warriors win against Heat
+            RecordGame("Knicks", "Bulls");     // Knicks win against Bulls
+            RecordGame("Warriors", "Lakers");  // Warriors win against Lakers
 
-            // 3. Visa leaderboarden
+            // 3. Display the leaderboard
             DisplayLeaderBoard();
 
-            // 4. Vänta på tangenttryckning innan konsolen stängs
-            AnsiConsole.MarkupLine("\n[grey]Tryck valfri tangent för att avsluta...[/]");
-            System.Console.ReadKey();
+            // 4. Wait for key press before closing console
+            AnsiConsole.MarkupLine("\n[grey]Press any key to exit...[/]");
+            Console.ReadKey();
         }
 
-        // ---------- SKAPA STANDARDLAG ----------
-
+        // ---------- CREATE DEFAULT TEAMS ----------
         private void CreateDefaultTeams()
         {
-            // Skapar de 10 lagen med 0 vinster och 0 förluster
+            // Create 10 teams with 0 wins and 0 losses
             teams.Add(new Team { TeamName = "Warriors" });
             teams.Add(new Team { TeamName = "Lakers" });
             teams.Add(new Team { TeamName = "Knicks" });
@@ -64,112 +56,104 @@ namespace DataVerseManager.Models
             teams.Add(new Team { TeamName = "Rockets" });
 
             JsonHandeler.SaveJson(teams, "leaderboard.json");
-
         }
 
-        // ---------- REGISTRERA MATCH ----------
-
+        // ---------- RECORD A GAME ----------
         private void RecordGame(string winnerTeamName, string loserTeamName)
         {
-            // Hitta laget som vann 
+            // Find the winning team
             Team winner = teams.FirstOrDefault(
-                t => t.TeamName.Equals(winnerTeamName, System.StringComparison.OrdinalIgnoreCase)
+                t => t.TeamName.Equals(winnerTeamName, StringComparison.OrdinalIgnoreCase)
             );
 
-            // Hitta laget som förlorade
+            // Find the losing team
             Team loser = teams.FirstOrDefault(
-                t => t.TeamName.Equals(loserTeamName, System.StringComparison.OrdinalIgnoreCase)
+                t => t.TeamName.Equals(loserTeamName, StringComparison.OrdinalIgnoreCase)
             );
 
-            // Om något av lagen inte finns, skriv felmeddelande och avsluta funktionen
+            // If one or both teams don't exist, show error and exit the function
             if (winner == null || loser == null)
             {
-                AnsiConsole.MarkupLine("[red]Fel: Ett eller båda lag finns inte.[/]");
+                AnsiConsole.MarkupLine("[red]Error: One or both teams do not exist.[/]");
                 return;
             }
 
-            // Öka vinstantal för vinnaren
+            // Increase wins for the winner
             winner.TeamWins++;
 
-            // Öka förlustantal för förloraren
+            // Increase losses for the loser
             loser.TeamLoses++;
 
-            // Uppdatera WinRate för alla lag efter ändringen
+            // Update WinRate for all teams after the change
             RecalculateWinRatio();
         }
 
-        // ---------- BERÄKNA W/L FÖR VARJE LAG ----------
-
+        // ---------- CALCULATE W/L FOR EACH TEAM ----------
         private void RecalculateWinRatio()
         {
-            // Gå igenom alla lag
             foreach (Team team in teams)
             {
-                // Om laget inte har några förluster → använd antalet vinster som WinRate
+                // If the team has no losses → use number of wins as WinRate
                 if (team.TeamLoses == 0)
                 {
                     team.WinRate = (double)team.TeamWins;
                 }
                 else
                 {
-                    // Annars beräkna vinster delat med förluster
-                    team.WinRate = (double)team.TeamWins / (double)team.TeamLoses;
+                    // Otherwise calculate wins divided by losses
+                    team.WinRate = (double)team.TeamWins / team.TeamLoses;
                 }
             }
         }
 
-        // ---------- VISA LEADERBOARD SOM TABELL ----------
-
+        // ---------- DISPLAY LEADERBOARD AS TABLE ----------
         private void DisplayLeaderBoard()
         {
-            // Sortera lagen:
-            // 1. Högst W/L först
-            // 2. Flest vinster
-            // 3. Färst förluster
-            System.Collections.Generic.List<Team> sortedTeams = teams
+            // Sort the teams:
+            // 1. Highest W/L first
+            // 2. Most wins
+            // 3. Fewest losses
+            List<Team> sortedTeams = teams
                 .OrderByDescending(t => t.WinRate)
                 .ThenByDescending(t => t.TeamWins)
                 .ThenBy(t => t.TeamLoses)
                 .ToList();
 
-            // Skapa en tabell
-            Table table = new Table();
+            // Create a table
+            Table table = new Table
+            {
+                Border = TableBorder.Rounded // Rounded borders for nicer appearance
+            };
 
-            // Lägg till rundade kanter för snyggare utseende
-            table.Border = TableBorder.Rounded;
+            // Add columns to the table
+            table.AddColumn(new TableColumn("[grey]Rank[/]").Centered());       // Placement (1st, 2nd, etc.)
+            table.AddColumn(new TableColumn("[bold]Team[/]"));                 // Team name
+            table.AddColumn(new TableColumn("[green]Wins[/]").Centered());     // Number of wins
+            table.AddColumn(new TableColumn("[red]Losses[/]").Centered());     // Number of losses
+            table.AddColumn(new TableColumn("[blue]W/L[/]").Centered());       // Win/Loss ratio
 
-            // Skapa kolumner i tabellen
-            table.AddColumn(new TableColumn("[grey]NR[/]").Centered());        // Placering (1:a, 2:a, 3:e)
-            table.AddColumn(new TableColumn("[bold]Lag[/]"));                 // Lagnamn
-            table.AddColumn(new TableColumn("[green]Vinster[/]").Centered()); // Antal vinster
-            table.AddColumn(new TableColumn("[red]Förluster[/]").Centered()); // Antal förluster
-            table.AddColumn(new TableColumn("[blue]W/L[/]").Centered());    // Win/Loss-ratio
-
-            // Håller reda på placeringen (1:a, 2:a, osv.)
             int rank = 1;
 
-            // Lägg till en rad för varje lag i sorteringsordning
+            // Add a row for each team
             foreach (Team team in sortedTeams)
             {
-                // Lägg till en rad med färgade värden
                 table.AddRow(
-                    rank.ToString(),                                    // Placering
-                    "[white]" + team.TeamName + "[/]",                  // Lagnamn
-                    "[green]" + team.TeamWins + "[/]",                  // Vinster
-                    "[red]" + team.TeamLoses + "[/]",                   // Förluster
-                    "[blue]" + team.WinRate.ToString("F2") + "[/]"    // W/L-ratio (två decimaler)
+                    rank.ToString(),                    // Rank
+                    "[white]" + team.TeamName + "[/]",  // Team name
+                    "[green]" + team.TeamWins + "[/]",  // Wins
+                    "[red]" + team.TeamLoses + "[/]",   // Losses
+                    "[blue]" + team.WinRate.ToString("F2") + "[/]" // W/L ratio (2 decimals)
                 );
 
-                // Gå till nästa placering
                 rank++;
             }
 
-            // Skapa en panel (ram) runt tabellen med rubriken "Leaderboard"
+            // Create a panel around the table with a header
             Panel panel = new Panel(table)
-                .Header("[bold]Leaderboard[/]") // Rubrik överst
-                .Padding(1, 1, 1, 1);            // Marginal runt tabellen
+                .Header("[bold]Leaderboard[/]") // Header
+                .Padding(1, 1, 1, 1);           // Padding around table
 
-            // Skriv ut panelen (och tabellen) i konsolen
+            // Render the panel
             AnsiConsole.Write(panel);
         }
     }

@@ -22,6 +22,12 @@ namespace DataVerseManager.Models
             Team randomTeamA = AllTeams[random.Next(AllTeams.Count)];
             Team randomTeamB = AllTeams[random.Next(AllTeams.Count)];
             
+            // Randomzie until the teams are not the same
+            while(randomTeamA == randomTeamB)
+            {
+               randomTeamA = AllTeams[random.Next(AllTeams.Count)];
+            }
+
             return (randomTeamA, randomTeamB);
         }
     }

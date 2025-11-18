@@ -1,6 +1,7 @@
 ﻿using DataVerseManager.Services;
 using Spectre.Console;
 using Spectre.Console.Extensions;
+using System;
 namespace DataVerseManager.Models
 {
     public static class AccountManager
@@ -80,12 +81,20 @@ namespace DataVerseManager.Models
         {
             RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
 
-            string searchUserName;
             Console.Write("Please write your username: ");
-            searchUserName = Console.ReadLine();
+            string searchUserName = Console.ReadLine();
 
             User thisUser = RegisteredUsers.Find(user =>
                 string.Equals(user.Name, searchUserName, StringComparison.OrdinalIgnoreCase));
+
+            // Stop the method if user doesn't exist
+            if (thisUser == null)
+            {
+                Console.WriteLine("Username not found!");
+                Console.WriteLine("Press Enter to continue...");
+                Console.ReadLine();
+                return;
+            }
 
             // Generate the reverse salt based on the user ID
             string reverseSalt = PasswordEncryptor("#" + thisUser.Id.ToString());
@@ -94,11 +103,12 @@ namespace DataVerseManager.Models
             string decryptedWithSalt = PasswordDecrypt(thisUser.Password);
 
             // Remove encrypted salt from password
-            string decryptedPassword;
-            // Start at char 0 in the string array and remove the lenght of characeter from reverse salt
-            decryptedPassword = decryptedWithSalt.Substring(0, decryptedWithSalt.Length - reverseSalt.Length);
+            string decryptedPassword = decryptedWithSalt.Substring(0, decryptedWithSalt.Length - reverseSalt.Length);
 
+            Console.Clear();
             Console.WriteLine("Your password is: " + decryptedPassword);
+            Console.WriteLine("Press Enter to continue...");
+            Console.ReadLine();
         }
         public static void LoadLogInMenu()
         {
@@ -148,20 +158,21 @@ namespace DataVerseManager.Models
             AnsiConsole.MarkupLine($"[red]Only authorized staff is allowed from this point, " +
                 $"\nplease enter password to confirm your identity:  [/]");
 
-            string entry = ReadHiddenPassword();
+            string entry = ReadHiddenPasswordWithEsc(out bool cancelled);
 
-            if(entry != ourSecretPassword)
+            if (entry != ourSecretPassword)
             {
                 Console.Clear();
                 Console.WriteLine("Incorrect password! Booting back to menu!");
+                AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
                 Console.ReadLine();
                 Console.Clear();
                 return;
             }
 
             RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
-            
-            foreach(User user in RegisteredUsers)
+
+            foreach (User user in RegisteredUsers)
             {
                 Console.WriteLine(user.ReturnUserInformation());
             }
@@ -177,74 +188,59 @@ namespace DataVerseManager.Models
             // Declare user on top of the scope
             User thisUser = new User();
 
-            bool noInputName = true;
-
-            while (noInputName)
+            while (true)
             {
-                string nameInput;
-                // Prompt username input
-                Console.Write("Please enter your username: ");
-                nameInput = Console.ReadLine();
-
-                // Look at our json and match the input when logging in to our register account
-                if (!RegisteredUsers.Any(user => user.Name == nameInput))
+                AnsiConsole.Markup($"[grey]Please enter your username: [/]");
+                string nameInput = ReadLineWithEsc(out bool cancelled);
+                if (cancelled)
                 {
-                    // If username doesnt exist put us back to the top
+                    Console.WriteLine("\nLogin cancelled.");
+                    return;
+                }
+
+                // Look up username
+
+                thisUser = RegisteredUsers
+                    .FirstOrDefault(u => string.Equals(u.Name, nameInput, StringComparison.OrdinalIgnoreCase));
+
+                if (thisUser == null)
+                {
                     Console.WriteLine("Username doesn't exist, please try again!");
+                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
                     Console.ReadLine();
                     Console.Clear();
                     continue;
                 }
-                else
-                {
-                    try
-                    {
-                        // Set user object to listed object
-                        thisUser = RegisteredUsers.Find(user => string.Equals(user.Name,
-                            nameInput, StringComparison.OrdinalIgnoreCase));
-                        // Else successfull and exist the loop
-                        noInputName = false;
-                    }
-                    catch (Exception ex)
-                    { Console.WriteLine(ex.Message); }
-                }
+                break; // found username
             }
+
             bool noInputPassword = true;
-            while (noInputPassword)
+            while (true)
             {
+                Console.Write("Please enter your password (ESC to cancel): ");
+                string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
+                if (cancelled)
+                {
+                    Console.WriteLine("\nLogin cancelled.");
+                    return;
+                }
 
-                // Prompt the user to enter their password
-                Console.Write("Please enter your password: ");
-                string passwordInput = ReadHiddenPassword();
-
-                // set salt
-                string salt = ("#" + thisUser.Id.ToString());
-
-                // Append the reverse salt to the input before encrypting
+                // Append salt
+                string salt = "#" + thisUser.Id.ToString();
                 string saltedPasswordInput = passwordInput + salt;
 
-                // Encrypt the salted password input
-                string encryptedInput = PasswordEncryptor(saltedPasswordInput); // Nemo_100#0
+                // Encrypt
+                string encryptedInput = PasswordEncryptor(saltedPasswordInput);
 
-
-                // Compare with the stored password
                 if (thisUser.Password != encryptedInput)
                 {
-
-                    // If password doesnt exist put us back to the top
                     Console.WriteLine("Password is incorrect, please try again!");
-                    Console.ReadLine();
-                    Console.Clear();
                     continue;
                 }
-                else
-                {
-                    // Go to menu with this account
-                    Console.WriteLine("Loading main menu with user " + thisUser.Name);
-                    // Else successfull and exist the loop
-                    noInputPassword = false;
-                }
+                break; // password correct
             }
+
+            Console.WriteLine($"Loading main menu with user {thisUser.Name}");
         }
         public static void RegisterAccount()
         {
@@ -264,49 +260,51 @@ namespace DataVerseManager.Models
             //Ask user for what user name they would wish to have
             //Look in Json files if there is an account with the same name -- if there is we can suggest the same name but with numbers in the end (2 random numbers)
             // Confirm if its okay with yes or no, Specter Console
-
-            bool noNameSet = true;
-
-            while (noNameSet)
+            while (true)
             {
-                Console.WriteLine("Please enter your prefered username: ");
-                string newName = Console.ReadLine();
-
-                if (RegisteredUsers.Any(user => user.Name == newName))
+                Console.Write("Please enter your preferred username: ");
+                string newName = ReadLineWithEsc(out bool cancelled);
+                if (cancelled)
                 {
-                    Console.WriteLine("Username already exists, please try another username!");
+                    Console.WriteLine("Registration cancelled.");
+                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
                     Console.ReadLine();
                     Console.Clear();
+                    return;
+                }
+
+                if (RegisteredUsers.Any(user => string.Equals(user.Name, newName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Console.WriteLine("Username already exists. Try another one.");
+                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
                     continue;
                 }
 
-                var yesOrNo = AnsiConsole.Prompt(
-                 new SelectionPrompt<string>()
-                .Title($"Is the name {newName} okay?")
-                .AddChoices(
-                "Yes", "No"
-                )
+                var confirm = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title($"Is the username '{newName}' okay?")
+                        .AddChoices("Yes", "No")
                 );
 
-                if (yesOrNo == "Yes")
+                if (confirm == "Yes")
                 {
                     newUser.Name = newName;
-                    AnsiConsole.WriteLine($"Your name has been set to: {newName}");
-                    noNameSet = false;
-                    Console.ReadLine();
-                    Console.Clear();
-                }
-                else if (yesOrNo == "No")
-                {
-                    Console.Clear();
+                    Console.WriteLine($"Username set to: {newName}");
+                    break;
                 }
             }
-
-            bool noPasswordSet = true;
-            while (noPasswordSet)
+            while (true)
             {
-                Console.Write("Please enter a password you would like to use: ");
-                string newPassword = Console.ReadLine();
+                Console.Write("Enter a password: ");
+                string newPassword = ReadLineWithEsc(out bool cancelled);
+                if (cancelled)
+                {
+                    Console.WriteLine("Registration cancelled.");
+                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
+                    Console.ReadLine();
+                    Console.Clear();
+                    return;
+                }
 
                 // Preset to false, if all of them turn out true after the foreach loop, then the password is accepted
                 bool hasLower = false;
@@ -340,7 +338,7 @@ namespace DataVerseManager.Models
                         int newId = 0;
 
                         // Extract all existing IDs into a HashSet for fast lookup
-                        HashSet<int> usedIds = new HashSet<int>(RegisteredUsers.Select(u => u.Id));
+                        HashSet<int> usedIds = new HashSet<int>(RegisteredUsers.Select(used => used.Id));
 
                         // Find the first free ID starting from 0
                         while (usedIds.Contains(newId))
@@ -357,13 +355,17 @@ namespace DataVerseManager.Models
                         newUser.Password = PasswordEncryptor(passwordWithSalt);
                         // Inform player of success:
                         AnsiConsole.WriteLine($"Your password has been set to: {newPassword}");
-                        noPasswordSet = false;
                         Console.ReadLine();
                         Console.Clear();
+                        break;
                     }
                     else if (yesOrNo == "No")
                     {
+                        // Tries again
+                        AnsiConsole.WriteLine($"Then try again...");
+                        Console.ReadLine();
                         Console.Clear();
+                        continue;
                     }
                 }
                 else
@@ -371,11 +373,12 @@ namespace DataVerseManager.Models
                     Console.Write("Password must have at least one lowercase, one uppercase and one special character!");
                     Console.ReadLine();
                     Console.Clear();
+                    continue;
                 }
 
             }
-            if(RegisteredUsers.Count() == 0)
-            newUser.Id = 0;
+            if (RegisteredUsers.Count() == 0)
+                newUser.Id = 0;
             else
             {
                 int newId = 0;
@@ -428,7 +431,7 @@ namespace DataVerseManager.Models
                     {
 
                         Console.Write($"Please confirm by entering {userToDelete.Name}'s password: ");
-                        string passwordInput = ReadHiddenPassword();
+                        string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
 
                         // set salt
                         string salt = ("#" + userToDelete.Id.ToString());
@@ -467,7 +470,57 @@ namespace DataVerseManager.Models
                 Console.WriteLine("The user was not found!");
             }
         }
-        public static string ReadHiddenPassword()
+        public static string ReadLineWithEsc(out bool cancelled)
+        {
+            // This does what the ReadHiddenPassword() method does without hidden char string but also allows for
+            // Escaping the code if you press wrong options in the menu
+
+            // Add substrings into an empty string object
+            string stringPoll = "";
+            // Make a new key state reader
+            ConsoleKeyInfo keyRead;
+            // Cacnel bool for menu naviagation
+            cancelled = false;
+
+            bool isReadingString = true;
+            while (isReadingString)
+            {
+                // Read keys, if true it doesn't show the input by the user
+                keyRead = Console.ReadKey(true);
+
+                if (keyRead.Key == ConsoleKey.Escape)
+                {
+                    cancelled = true;
+                    return null;
+                }
+                // Save the key read to stringPoll and show the char each time as "★"
+                if (!char.IsControl(keyRead.KeyChar))
+                {
+                    stringPoll += keyRead.KeyChar;
+                    Console.Write(keyRead.KeyChar);
+                }
+                // Erase char in password if the lenght is 1 and up
+                else if (keyRead.Key == ConsoleKey.Backspace && stringPoll.Length >= 1)
+                {
+                    stringPoll = stringPoll.Substring(0, stringPoll.Length - 1);
+                    // \b is a back space that moves the cursor in Console back,
+                    // makes a empty space (in other words replace the previous char with empty),
+                    // and sets another step back to be at the position of the char before it to write ahead
+                    AnsiConsole.Markup("\b \b");
+                }
+                // Press enter to confirm the current string
+                else if (keyRead.Key == ConsoleKey.Enter)
+                {
+                    AnsiConsole.WriteLine();
+                    Console.Clear();
+                    isReadingString = false;
+                }
+
+            }
+            // reutrn the poll of chars -- passworPoll as the new Password
+            return stringPoll;
+        }
+        public static string ReadHiddenPasswordWithEsc(out bool cancelled)
         {
             // Read the password into a string but show the user only "★" for each char
 
@@ -475,6 +528,8 @@ namespace DataVerseManager.Models
             string passwordPoll = "";
             // Make a new key state reader
             ConsoleKeyInfo keyRead;
+            // Cacnel bool for menu naviagation
+            cancelled = false;
 
             bool isReadingPassword = true;
             while (isReadingPassword)
@@ -482,6 +537,11 @@ namespace DataVerseManager.Models
                 // Read keys, if true it doesn't show the input by the user
                 keyRead = Console.ReadKey(true);
 
+                if (keyRead.Key == ConsoleKey.Escape)
+                {
+                    cancelled = true;
+                    return null;
+                }
                 // Save the key read to passwordPoll and show the char each time as "★"
                 if (!char.IsControl(keyRead.KeyChar))
                 {
@@ -504,6 +564,7 @@ namespace DataVerseManager.Models
                     Console.Clear();
                     isReadingPassword = false;
                 }
+
             }
             // reutrn the poll of chars -- passworPoll as the new Password
             return passwordPoll;

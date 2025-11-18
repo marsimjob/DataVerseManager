@@ -10,7 +10,7 @@ internal static class RuleBook
 {
     // Rulebook script is made to look up basketball rules by the user as a distraction and to study up!
 
-    // We have 15 rules in total that we can show
+    // We have 10 rules in total that we can show
     public static List<Rule> ListOfRules { get; } = new List<Rule>
 {
 new Rule(
