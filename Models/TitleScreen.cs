@@ -3,9 +3,9 @@ using System;
 using System.Threading;
 namespace DataVerseManager.Models
 {
-    public class TitleScreen
+    public static class TitleScreen
     {
-        public void ShowSplashScreen()
+        public static void ShowSplashScreen()
         {
             AnsiConsole.Clear();
 

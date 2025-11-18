@@ -42,9 +42,6 @@ namespace DataVerseManager.Models
             Teams.Add(new Team { TeamName = "Rockets" });
         }
 
-
-
-
         // ------------ BETTING FUNCTIONALITY ----------
 
         // Returnerar decimalodds för två lag, baserat på deras aktuella Team.Power.
@@ -140,7 +137,7 @@ namespace DataVerseManager.Models
             double walletBalance = better.UserWallet.ReturnWalletBalance();
 
             // Fråga om insats med Spectre.Console
-            double betAmount = AnsiConsole.Ask<double>("[green]Enter your bet amount ($):[/]");
+            double betAmount = AnsiConsole.Ask<double>("[green]Enter your bet amount: $[/]");
 
             // Can only bet if bet amount is less than you wallet balance
             if (walletBalance >= betAmount)
@@ -167,26 +164,33 @@ namespace DataVerseManager.Models
                 }
 
                 AnsiConsole.MarkupLine($"\nPlacing a bet of [green]${betAmount}[/] on [blue]{teamName}[/]...");
-             
-                Team Winningteam = Match.SimulateMatch(team1, team2);
+
+                Console.ReadLine();
+
+                // Simulate match and get winner
+                MatchSimulator.RunVisualMatch(team1, team2);
+                Team Winningteam = MatchSimulator.currentWinner;
 
                 if (Winningteam.TeamName == teamName)
                 {
                     double potentialWin = betAmount * odds;
                     AnsiConsole.MarkupLine(
-                        $"[bold green]You won![/] If {teamName} wins, you get [bold]${Math.Round(potentialWin, 2)}[/]"
+                        $"[bold green]You won![/] {teamName} Win! Your winnings for this bet are [bold]${Math.Round(potentialWin, 2)}[/]"
                     );
                     // Add to wallet
                     better.UserWallet.GetMoney(potentialWin);
+                    Console.ReadLine();
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine($"[red]Sorry,[/] {teamName} lost the match.");
+                    AnsiConsole.MarkupLine($"[red]Sorry,[/] {teamName} lost the match. No returns on your bets!");
+                    Console.ReadLine();
                 }
             }
             else
             {
                 Console.WriteLine("You dont have enough money to bet this much!");
+                Console.ReadLine();
                 return;
             }
         }
@@ -200,7 +204,7 @@ namespace DataVerseManager.Models
             table.ShowHeaders = true;
 
 
-            table.AddColumn($"[green]{teamA.TeamName} vs {teamB.TeamName}[/]");
+            table.AddColumn($"[{AppSettings.SubColor}]{teamA.TeamName} vs {teamB.TeamName}[/]");
             table.AddColumn("[green]1[/]");
             table.AddColumn("[green]2[/]");
 

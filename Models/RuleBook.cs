@@ -1,20 +1,17 @@
-﻿using System;
+﻿using DataVerseManager.Models;
+using DataVerseManager.Services;
+using Spectre.Console;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using DataVerseManager.Models;
-
-namespace DataVerseManager.Models
+namespace DataVerseManager.Models;
+internal static class RuleBook
 {
-   /// <summary>
-   /// RuleBook är "regelboken" – den innehåller en lista med alla regler
-   /// och metoder för att söka och visa dem.
-   /// </summary>
-    internal static class RuleBook
-    {
-       /// <summary>
-       /// Här ligger alla våra 15 regler.
-       /// </summary>
-        public static List<Rule> ListOfRules { get; } = new List<Rule>
+    // Rulebook script is made to look up basketball rules by the user as a distraction and to study up!
+
+    // We have 15 rules in total that we can show
+    public static List<Rule> ListOfRules { get; } = new List<Rule>
 {
 new Rule(
 1,
@@ -56,7 +53,7 @@ new Rule(
 7,
 "Shooting",
 "A player shoots the ball to score. Shots taken from beyond the three-point line are worth 3 points.",
-"shoot", "basket", "three-pointer"),
+"shoot", "shot", "three-pointer"),
 
 new Rule(
 8,
@@ -66,114 +63,219 @@ new Rule(
 
 new Rule(
 9,
-"Traveling",
-"Traveling happens when a player moves their feet illegally while holding the ball.",
-"travel", "steps", "violation"),
+"Timeouts",
+"Coaches may call timeouts to stop play for strategy or to rest players.",
+"timeout", "coach", "break"),
 
 new Rule(
 10,
-"Double Dribble",
-"A player cannot start dribbling again after stopping, or dribble with both hands at the same time.",
-"double dribble", "mistake", "violation"),
-
-new Rule(
-11,
-"Personal Fouls",
-"Personal fouls involve illegal contact such as pushing, hitting, or holding.",
-"foul", "contact", "defense"),
-
-new Rule(
-12,
-"Free Throws",
-"After certain fouls, the player gets free throws worth 1 point each.",
-"free throw", "line", "foul shot"),
-
-new Rule(
-13,
 "Three-Second Rule",
 "An offensive player cannot stay in the paint for more than three seconds while their team has the ball.",
 "paint", "key", "violation"),
 
-new Rule(
-14,
-"Backcourt Violation",
-"After crossing mid-court, the offensive team cannot return the ball to the backcourt.",
-"backcourt", "midcourt", "rule"),
-
-new Rule(
-15,
-"Timeouts",
-"Coaches may call timeouts to stop play for strategy or to rest players.",
-"timeout", "coach", "break")
 };
 
-     /// <summary>
-     /// Låter användaren skriva in ett regelnummer eller ett nyckelord
-     /// och försöker hitta en matchande regel.
-     
-        
-     
-        /// </summary>
-        public static void SearchRule()
-        {
-            Console.Write("Write a rule number or a keyword to search: ");
-            string? input = Console.ReadLine();
+    /// <summary>
+    /// Låter användaren skriva in ett regelnummer eller ett nyckelord
+    /// och försöker hitta en matchande regel.
+    /// </summary>
 
+    public static void RunRuleBook()
+    {
+        bool keepRunning = true;
+
+        while (keepRunning)
+        {
+            Console.Clear();
+
+            SpectreGeneric.PresentTopTitle("RULE BOOK", AppSettings.MainColor, AppSettings.SubColor);
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title($"[{AppSettings.MainColor}]Choose browsing method: [/]")
+                    .PageSize(5)
+                    .HighlightStyle(new Style(foreground: AppSettings.AccentColor))
+                    .AddChoices(new[] {
+                        "SEARCH RULE",
+                        "LIST ALL RULES",
+                        "RETURN TO TOP MENU" }));
+
+            switch (choice)
+            {
+                case "SEARCH RULE":
+                    SearchRuleInteractive();
+                    break;
+                case "LIST ALL RULES":
+                    ListAllRules();
+                    break;
+                case "RETURN TO TOP MENU":
+                    keepRunning = false;
+                    break;
+            }
+        }
+    }
+    private static void SearchRuleInteractive()
+    {
+        bool searching = true;
+
+        while (searching)
+        {
+            Console.Clear();
+            SpectreGeneric.PresentTopTitle("RULE BOOK", AppSettings.MainColor, AppSettings.SubColor);
+
+            AnsiConsole.MarkupLine("[grey]Press ESC to return to the menu.[/]");
+            AnsiConsole.Markup("[green]Enter a rule number or keyword:[/] ");
+
+            string input = "";
+            ConsoleKeyInfo keyInfo;
+
+            // --- ESC + typed-input reader ---
+            while (true)
+            {
+                keyInfo = Console.ReadKey(true);
+
+                if (keyInfo.Key == ConsoleKey.Escape)
+                {
+                    searching = false;
+                    break;
+                }
+
+                if (keyInfo.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    break;
+                }
+
+                input += keyInfo.KeyChar;
+                Console.Write(keyInfo.KeyChar);
+            }
+
+            if (!searching)
+                break;
+
+            // Unify and trim the input so the search is eaiser
+            input = input.Trim().ToLower();
+
+            // Loop if input is empty
             if (string.IsNullOrWhiteSpace(input))
+                continue;
+
+            // Look for rules that match
+            List<Rule> foundRules = new List<Rule>();
+
+            // If input is a number, try matching rule number
+            if (input.All(char.IsDigit))
             {
-                Console.WriteLine("You must write something to search for.");
-                return;
+                int number = int.Parse(input);
+                var exact = ListOfRules.FirstOrDefault(r => r.RuleNr == number);
+                if (exact != null)
+                {
+                    foundRules.Add(exact);
+                }
             }
 
-            Rule? foundRule = null;
-
-            // 1. Försök först tolka det användaren skrev som ett regelnummer
-            if (int.TryParse(input, out int ruleNumber))
+            // LEVEL 1...
+            // If number isnt enough and it cant find any rules with them search keyword or title
+            if (foundRules.Count == 0)
             {
-                foundRule = ListOfRules.FirstOrDefault(r => r.RuleNr == ruleNumber);
+                foreach (var r in ListOfRules)
+                {
+                    // if input match any of the rules at RuleName, KeyWord1, KeyWord2, KeyWord3
+
+                    if (r.RuleName.ToLower().Contains(input) ||
+                        r.KeyWord1.ToLower().Contains(input) ||
+                        r.KeyWord2.ToLower().Contains(input) ||
+                        r.KeyWord3.ToLower().Contains(input))
+                    {
+                        foundRules.Add(r);
+                    }
+                }
             }
 
-            // 2. Om ingen regel hittades med nummer, sök på text/nyckelord
-            if (foundRule is null)
+            // LEVEL 2...
+            // If no matches even with keywords or titles
+            if (foundRules.Count == 0)
             {
-                string searchText = input.Trim().ToLower();
-
-                foundRule = ListOfRules.FirstOrDefault(r =>
-                r.RuleName.ToLower().Contains(searchText) ||
-                r.RuleInfo.ToLower().Contains(searchText) ||
-                r.KeyWord1.ToLower().Contains(searchText) ||
-                r.KeyWord2.ToLower().Contains(searchText) ||
-                r.KeyWord3.ToLower().Contains(searchText));
+                AnsiConsole.MarkupLine("[red]No matching rule found.[/]");
+                AnsiConsole.MarkupLine("[grey]Press any key to search for a new rule...[/]");
+                Console.ReadLine();
+                // Loop to the top
+                continue;
+            }
+            // If found matches
+            // If only one match
+            if (foundRules.Count == 1)
+            {
+                ShowRule(foundRules[0]);
+                // Loop to the top
+                continue;
             }
 
-            // 3. Skriv ut resultat
-            if (foundRule is null)
-            {
-                Console.WriteLine("No rule found that matches your search.");
-            }
-            else
-            {
-                ShowRule(foundRule);
-            }
+            // LEVEL 3...
+            // Finally if none of the above work:
+            // If multiple matches the MultiRuleSelection method will list them and let the user choose
+            Rule selectedRule = MultiRuleSelection(foundRules);
+            
+            // The choice shows up here
+            ShowRule(selectedRule);
         }
+    }
+    private static void ListAllRules()
+    {
+        // Create a table to organize rules
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Expand();
 
-        /// <summary>
-        /// Skriver ut en regel på ett tydligt sätt.
-        /// </summary>
-        public static void ShowRule(Rule rule)
+        // Define columns
+        table.AddColumn(new TableColumn("[bold yellow]Rule #[/]").Centered());
+        table.AddColumn(new TableColumn("[bold green]Title[/]").Centered());
+        table.AddColumn(new TableColumn("[bold white]Description[/]").Centered());
+        table.AddColumn(new TableColumn("[grey]Keywords[/]").Centered());
+
+        // Add rows for each rule
+        foreach (var rule in ListOfRules)
         {
-            Console.WriteLine();
-            Console.WriteLine($"Rule number : {rule.RuleNr}");
-            Console.WriteLine($"Title : {rule.RuleName}");
-            Console.WriteLine("Description :");
-            Console.WriteLine(rule.RuleInfo);
-
-            if (rule.KeyWordList.Count > 0)
-            {
-                Console.WriteLine($"Keywords : {string.Join(", ", rule.KeyWordList)}");
-            }
-
-            Console.WriteLine();
+            string keywords = rule.KeyWordList.Count > 0 ? string.Join(", ", rule.KeyWordList) : "-";
+            table.AddRow(
+                rule.RuleNr.ToString(),
+                rule.RuleName.EscapeMarkup(),
+                rule.RuleInfo.EscapeMarkup(),
+                keywords.EscapeMarkup()
+            );
         }
+
+        // Render the table
+        AnsiConsole.Write(table);
+
+        // Wait for user input
+        AnsiConsole.MarkupLine("\n[grey]Press any key to go back...[/]");
+        Console.ReadKey(true);
+    }
+    private static Rule MultiRuleSelection(List<Rule> rules)
+    {
+        var prompt = new SelectionPrompt<Rule>()
+            .Title("[yellow]Multiple rules matched. Select one:[/]")
+            .UseConverter(r => $"Rule {r.RuleNr}: {r.RuleName}")
+            .HighlightStyle(new Style(foreground: AppSettings.AccentColor))
+            .AddChoices(rules);
+
+        return AnsiConsole.Prompt(prompt);
+    }
+    public static void ShowRule(Rule rule)
+    {
+        Console.Clear();
+        SpectreGeneric.PresentTopTitle("RULE BOOK", AppSettings.MainColor, AppSettings.SubColor);
+
+        AnsiConsole.MarkupLine($"[grey]Rule:[/] [bold yellow]#{rule.RuleNr}[/]");
+        AnsiConsole.MarkupLine($"[grey]Title:[/] [bold blue]{rule.RuleName}[/]");
+        AnsiConsole.MarkupLine("[grey]Description: [/]");
+        AnsiConsole.MarkupLine($"[white]{rule.RuleInfo}[/]");
+
+        if (rule.KeyWordList.Count > 0)
+        { AnsiConsole.MarkupLine($"[grey]Keywords:[/] [cyan]{string.Join(", ", rule.KeyWordList)}[/]"); }
+        Console.WriteLine();
+        AnsiConsole.MarkupLine("[grey]Press any key to search for a new rule...[/]");
+        Console.ReadLine();
     }
 }

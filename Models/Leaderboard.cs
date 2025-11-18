@@ -65,8 +65,6 @@ namespace DataVerseManager.Models
 
             JsonHandeler.SaveJson(teams, "leaderboard.json");
 
-
-
         }
 
         // ---------- REGISTRERA MATCH ----------

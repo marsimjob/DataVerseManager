@@ -5,10 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataVerseManager.UI
+namespace DataVerseManager.Services
 {
     public static class SpectreGeneric
     {
+        public static void PresentTopTitle(string contents, string mainColor, string subColor)
+        {
+            AnsiConsole.MarkupLine($"[{mainColor}]🏀 -- NBA SHOWTIME 2K26 -- 🏀[/]");
+            var ruler = new Spectre.Console.Rule(contents);
+            ruler.Style = Style.Parse(subColor);
+            AnsiConsole.Write(ruler);
+        }
         public static void LoadScreen()
         {
             Console.Clear();
@@ -24,7 +31,7 @@ namespace DataVerseManager.UI
                // String that I will update in the loop
                string basketLine = "";
                // Rolling ball intervals
-               int rollIntervals = 85;
+               int rollIntervals = 45;
                for (int i = 0; i < rollIntervals; i++)
                {
                    if (i < rollIntervals)

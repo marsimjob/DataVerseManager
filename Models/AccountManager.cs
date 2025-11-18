@@ -1,6 +1,6 @@
 ﻿using DataVerseManager.Services;
 using Spectre.Console;
-
+using Spectre.Console.Extensions;
 namespace DataVerseManager.Models
 {
     public static class AccountManager
@@ -103,7 +103,7 @@ namespace DataVerseManager.Models
         public static void LoadLogInMenu()
         {
             // Welcome player
-            AnsiConsole.MarkupLine("[#ffa500]🏀 -- NBA ShowTime 2K26 -- 🏀[/]");
+            SpectreGeneric.PresentTopTitle("LOG IN", "white", "grey");
             string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
                 .Title($"[#705050]Would you like to log-in to a pre-existing account or register a new account?[/]")
                 .AddChoices(

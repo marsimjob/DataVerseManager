@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataVerseManager.Models
 {
-    public class Matchboard
+    public static class Matchboard
     {
         /// <summary>
         /// UPPGIFT: SKAPA EN MATCHBOARD SOM VISAR VILKA MATCHER SOM HAR HÄNT SENAST MED SPECTRE CONSOLE TABELL
@@ -19,63 +19,54 @@ namespace DataVerseManager.Models
         /// *** WILL USE A JSON FILE TO SAVE ALL MATCHES IN THE FINAL APP
 
         // Search for matches through Date with LINQ, Or any other variable in the Match class (Score, who played etc)
-        public List<Match> Matchboards { get; set; }
-        
-       
-            
-        public Matchboard()
-        {
-        }
-
-        public void ShowMenu()
+        public static List<Match> Matchboards = JsonHandeler.LoadJson<List<Match>>("matchboards.json");
+  
+        public static void ShowMenu()
         {
             bool running = true;
 
             while (running)
             {
-                Console.Clear(); // ← RENSAR innan menyn visas
+                Console.Clear();
+                SpectreGeneric.PresentTopTitle("MATCHBOARD", AppSettings.MainColor, AppSettings.SubColor);
 
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                        .Title("[yellow]What would you like to do?[/]")
+                        .Title($"[{AppSettings.MainColor}]What would you like to do?[/]")
                         .PageSize(5)
+                        .HighlightStyle(new Style(foreground: AppSettings.AccentColor))
                         .AddChoices(new[]
                         {
-                    "View latest matches",
-                    "Search by team",
-                    "Exit"
+                    "VIEW LATEST MATCHES",
+                    "SEARCH BY TEAM",
+                    "RETURN TO TOP MENU"
                         })
                 );
 
                 switch (choice)
                 {
-                    case "View latest matches":
+                    case "VIEW LATEST MATCHES":
                         DisplayLatestMatches();
                         break;
 
-                    case "Search by team":
+                    case "SEARCH BY TEAM":
                         SearchByTeam();
                         break;
 
-                    case "Exit":
+                    case "RETURN TO TOP MENU":
                         running = false;
-                        AnsiConsole.MarkupLine("[green]Goodbye![/]");
                         break;
                 }
 
                 if (running)
                 {
                     AnsiConsole.WriteLine();
-                    AnsiConsole.MarkupLine("[grey]Press ENTER to return to menu...[/]");
                     Console.ReadLine();
                 }
             }
         }
 
-
-
-
-        public void DisplayLatestMatches(int daysBack = 7)
+        public static void DisplayLatestMatches(int daysBack = 7)
         {
             var latest = Matchboards
                 .Where(m => m.MatchTime >= DateTime.Today.AddDays(-daysBack))
@@ -121,7 +112,7 @@ namespace DataVerseManager.Models
             AnsiConsole.Write(table);
         }
 
-        public void SearchByTeam()
+        public static void SearchByTeam()
         {
             // Lista med tillgängliga lag
             var teams = new List<string>
@@ -167,12 +158,12 @@ namespace DataVerseManager.Models
 
                 if (m.OneScore > m.TwoScore)
                 {
-                    // TeamOne wins → OneScore green, TwoScore red
+                    // TeamOne wins >> OneScore green othewise TwoScore red
                     result = $"[green]{m.OneScore}[/] - [red]{m.TwoScore}[/]";
                 }
                 else if (m.OneScore < m.TwoScore)
                 {
-                    // TeamTwo wins → TwoScore green, OneScore red
+                    // TeamTwo wins >> TwoScore green/OneScore red
                     result = $"[red]{m.OneScore}[/] - [green]{m.TwoScore}[/]";
                 }
                 else
@@ -183,7 +174,7 @@ namespace DataVerseManager.Models
                 table.AddRow(
                     m.MatchTime.ToShortDateString(),
                     m.TeamOne,
-                    m.TeamTwo, 
+                    m.TeamTwo,
                     result
 
                 );
@@ -191,7 +182,5 @@ namespace DataVerseManager.Models
 
             AnsiConsole.Write(table);
         }
-
-
     }
 }
