@@ -9,8 +9,21 @@ namespace DataVerseManager.Models
         // We created an AccountManager class that handles log in and register of accounts.
         // Additionally: We added a Password retriever for forgotten passwords for the users
 
-        // List of registered users
-        public static List<User> RegisteredUsers = new List<User>();
+        // List of registered users -- I set it to our json, if the json fails we make a new list
+        public static List<User> RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json") ?? new List<User>();
+        // List of registered coaches -- same as above
+        public static List<Coach> RegisteredCoaches = JsonHandeler.LoadJson<List<Coach>>("registeredCoaches.json") ?? new List<Coach>();
+
+        // Selection array
+        private static readonly string[] LogInMenuChoices = new string[]
+        {
+            "LOG-IN",
+            "REGISTER",
+            "FORGOT PASSWORD",
+            "ERASE ACCOUNT",
+            "[grey]DEBUG[/]",
+            "EXIT APPLICATION"
+        };
 
         // ENCODE TABLES ARE USED FOR PASSWORD ENCRYPTOR AND DECRYPTOR (almost like hashing but easier):
         // Encode table Dictionary that holds characters that will replace the Key characeter referenced
@@ -79,17 +92,25 @@ namespace DataVerseManager.Models
 
         public static void ForgotPassword()
         {
-            RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
-
             Console.Write("Please write your username: ");
             string searchUserName = Console.ReadLine();
 
+            // Look for user in registered users list
             User thisUser = RegisteredUsers.Find(user =>
                 string.Equals(user.Name, searchUserName, StringComparison.OrdinalIgnoreCase));
+
+            // If it doesn't find it there, look for it in the coach list
+            // (Coach class inherits from User class, so it will work the same but upgraded)
+            if (thisUser == null)
+            {
+                thisUser = RegisteredCoaches.Find(user =>
+                string.Equals(user.Name, searchUserName, StringComparison.OrdinalIgnoreCase));
+            }
 
             // Stop the method if user doesn't exist
             if (thisUser == null)
             {
+                Console.Clear();
                 Console.WriteLine("Username not found!");
                 Console.WriteLine("Press Enter to continue...");
                 Console.ReadLine();
@@ -110,39 +131,40 @@ namespace DataVerseManager.Models
             Console.WriteLine("Press Enter to continue...");
             Console.ReadLine();
         }
-        public static void LoadLogInMenu()
+        public static User LoadLogInMenu()
         {
+            User thisUser = null;
+
             // Welcome player
-            SpectreGeneric.PresentTopTitle("LOG IN", "white", "grey");
+            SpectreGeneric.PresentTopTitle("LOG-IN", "white", "grey");
             string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                .Title($"[#705050]Would you like to log-in to a pre-existing account or register a new account?[/]")
-                .AddChoices(
-                "Log-In", "Register", "Forgot Password", "Erase Account", "[#303030]Debug[/]", "Exit Application"
-                ));
+                .Title($"[#705050]Log-in to a pre-existing account or register a new account[/]")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]")
+                .AddChoices(LogInMenuChoices));
 
             switch (choice)
             {
-                case "Log-In":
+                case "LOG-IN":
                     Console.Clear();
-                    LogInAccount();
+                    thisUser = LogInAccount();
                     break;
-                case "Register":
+                case "REGISTER":
                     Console.Clear();
                     RegisterAccount();
                     break;
-                case "Forgot Password":
+                case "FORGOT PASSWORD":
                     Console.Clear();
                     ForgotPassword();
                     break;
-                case "Erase Account":
+                case "ERASE ACCOUNT":
                     Console.Clear();
                     EraseAccount();
                     break;
-                case "Debug":
+                case "[grey]DEBUG[/]":
                     Console.Clear();
                     RunDebug();
                     break;
-                case "Exit Application":
+                case "EXIT APPLICATION":
                     Console.Clear();
                     Environment.Exit(0);
                     break;
@@ -150,65 +172,72 @@ namespace DataVerseManager.Models
                     Console.WriteLine("No choice, return...I dunno!");
                     break;
             }
+
+            return thisUser;
         }
 
         private static void RunDebug()
         {
             string ourSecretPassword = "flyhigh";
-            AnsiConsole.MarkupLine($"[red]Only authorized staff is allowed from this point, " +
-                $"\nplease enter password to confirm your identity:  [/]");
+            string message = "[red]Only authorized staff is allowed from this point-- " +
+                $"\nPlease enter the Secret Password to confirm your identity...[/]";
+            AnsiConsole.MarkupLine(message);
+            AnsiConsole.Markup("[grey]Enter Password: [/]");
 
             string entry = ReadHiddenPasswordWithEsc(out bool cancelled);
 
             if (entry != ourSecretPassword)
             {
-                Console.Clear();
-                Console.WriteLine("Incorrect password! Booting back to menu!");
-                AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
-                Console.ReadLine();
-                Console.Clear();
+                SpectreGeneric.PrintMessagePrompt("Incorrect password! Booting back to menu!");
                 return;
             }
 
             RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
 
+            AnsiConsole.MarkupLine("[grey]----- REGISTERED USERS DEBUG INFO -----[/]");
             foreach (User user in RegisteredUsers)
             {
                 Console.WriteLine(user.ReturnUserInformation());
+            }
+            AnsiConsole.MarkupLine("[grey]----- REGISTERED COACHES DEBUG INFO -----[/]");
+            foreach (Coach coach in RegisteredCoaches)
+            {
+                Console.WriteLine(coach.ReturnUserInformation());
             }
             Console.ReadLine();
             Console.Clear();
         }
 
-        public static void LogInAccount()
+        public static User LogInAccount()
         {
-            // Load json
-            RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
-
-            // Declare user on top of the scope
-            User thisUser = new User();
+            // Declare user or coach as null to look for possible matches
+            User thisUser = null;
+            Coach thisCoach = null;
 
             while (true)
             {
-                AnsiConsole.Markup($"[grey]Please enter your username: [/]");
+                AnsiConsole.Markup($"[grey]Please enter your Username: [/]");
                 string nameInput = ReadLineWithEsc(out bool cancelled);
+
                 if (cancelled)
                 {
-                    Console.WriteLine("\nLogin cancelled.");
-                    return;
+                    SpectreGeneric.PrintMessagePrompt("Log-in Cancelled.", "red");
+                    return null;
                 }
 
                 // Look up username
-
                 thisUser = RegisteredUsers
-                    .FirstOrDefault(u => string.Equals(u.Name, nameInput, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(user => string.Equals(user.Name, nameInput, StringComparison.OrdinalIgnoreCase));
 
                 if (thisUser == null)
                 {
-                    Console.WriteLine("Username doesn't exist, please try again!");
-                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
-                    Console.ReadLine();
-                    Console.Clear();
+                   thisCoach = RegisteredCoaches
+                                        .FirstOrDefault(user => string.Equals(user.Name, nameInput, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (thisUser == null && thisCoach == null)
+                {
+                    SpectreGeneric.PrintMessagePrompt("Username doesn't exist, please try again!", "red");
                     continue;
                 }
                 break; // found username
@@ -217,30 +246,54 @@ namespace DataVerseManager.Models
             bool noInputPassword = true;
             while (true)
             {
-                Console.Write("Please enter your password (ESC to cancel): ");
+                AnsiConsole.Markup($"[grey]Please enter your Password : [/]");
                 string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
                 if (cancelled)
                 {
-                    Console.WriteLine("\nLogin cancelled.");
-                    return;
+                    SpectreGeneric.PrintMessagePrompt("Log-in Cancelled.", "red");
+                    return null;
                 }
 
                 // Append salt
-                string salt = "#" + thisUser.Id.ToString();
+                string salt;
+
+                if (thisCoach != null)
+                {
+                    salt = "#" + thisCoach.OriginalId.ToString();
+                }
+                else
+                {
+                    salt = "#" + thisUser.Id.ToString();
+                }
                 string saltedPasswordInput = passwordInput + salt;
 
                 // Encrypt
                 string encryptedInput = PasswordEncryptor(saltedPasswordInput);
-
-                if (thisUser.Password != encryptedInput)
+             
+                if (thisCoach != null)
                 {
-                    Console.WriteLine("Password is incorrect, please try again!");
-                    continue;
+                    if (thisCoach.Password != encryptedInput)
+                    {
+                        SpectreGeneric.PrintMessagePrompt("Incorrect password, please try again!", "red");
+                        continue;
+                    }
+                    return thisCoach;
                 }
-                break; // password correct
+                else
+                {
+                    if (thisUser.Password != encryptedInput)
+                    {
+                        SpectreGeneric.PrintMessagePrompt("Incorrect password, please try again!", "red");
+                        continue;
+                    }
+
+                    return thisUser;
+                }
+             
             }
 
-            Console.WriteLine($"Loading main menu with user {thisUser.Name}");
+            SpectreGeneric.PrintMessagePrompt($"Loading main menu with user {thisUser.Name}");
+
         }
         public static void RegisterAccount()
         {
@@ -266,43 +319,46 @@ namespace DataVerseManager.Models
                 string newName = ReadLineWithEsc(out bool cancelled);
                 if (cancelled)
                 {
-                    Console.WriteLine("Registration cancelled.");
-                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
-                    Console.ReadLine();
-                    Console.Clear();
+                    SpectreGeneric.PrintMessagePrompt("Registration cancelled.", "red");
                     return;
                 }
 
                 if (RegisteredUsers.Any(user => string.Equals(user.Name, newName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Console.WriteLine("Username already exists. Try another one.");
-                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
+                    SpectreGeneric.PrintMessagePrompt("Username already exists, please choose another one!", "yellow");
                     continue;
                 }
 
-                var confirm = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title($"Is the username '{newName}' okay?")
-                        .AddChoices("Yes", "No")
-                );
-
-                if (confirm == "Yes")
+                if (string.IsNullOrWhiteSpace(newName))
                 {
-                    newUser.Name = newName;
-                    Console.WriteLine($"Username set to: {newName}");
-                    break;
+                    SpectreGeneric.PrintMessagePrompt("Username cannot be empty or whitespace, please choose another one!", "red");
+                    continue;
+                }
+                else
+                {
+                    var confirm = AnsiConsole.Prompt(
+                        new SelectionPrompt<string>()
+                            .Title($"Is the username '{newName}' okay?")
+                            .AddChoices("Yes", "No")
+                    );
+
+                    if (confirm == "Yes")
+                    {
+                        newUser.Name = newName;
+                        SpectreGeneric.PrintMessagePrompt($"Username set to: {newUser.Name}", "green");
+                        break;
+                    }
                 }
             }
             while (true)
             {
-                Console.Write("Enter a password: ");
+                AnsiConsole.MarkupLine($"[grey]Please set a password for user {newUser.Name}[/]");
+                AnsiConsole.Markup("Enter a password: ");
                 string newPassword = ReadLineWithEsc(out bool cancelled);
+
                 if (cancelled)
                 {
-                    Console.WriteLine("Registration cancelled.");
-                    AnsiConsole.MarkupLine("[grey]Press to continue...[/]");
-                    Console.ReadLine();
-                    Console.Clear();
+                    SpectreGeneric.PrintMessagePrompt("Registration Cancelled.", "red");
                     return;
                 }
 
@@ -320,6 +376,8 @@ namespace DataVerseManager.Models
                     else if (!char.IsLetterOrDigit(c))
                         hasSpecial = true;
                 }
+
+                // If all are found:
                 if (hasLower && hasUpper && hasSpecial)
                 {
                     var yesOrNo = AnsiConsole.Prompt(
@@ -337,15 +395,16 @@ namespace DataVerseManager.Models
                         // the newUsers ID (which in this case it its position in the RegisterUser list count)
                         int newId = 0;
 
-                        // Extract all existing IDs into a HashSet for fast lookup
-                        HashSet<int> usedIds = new HashSet<int>(RegisteredUsers.Select(used => used.Id));
+                        // Extract all existing IDs into a list for fast lookup
+                        List<int> usedIds = new List<int>(RegisteredUsers.Select(used => used.Id));
 
-                        // Find the first free ID starting from 0
+                        // Find the first free ID, starting from 0 and increment. As long as it finds userd IDs it keeps going
                         while (usedIds.Contains(newId))
                         {
                             newId++;
                         }
 
+                        // Get the increment it lands on after the latest contain and use it
                         newUser.Id = newId;
 
                         string salt = ("#" + newId);
@@ -354,37 +413,33 @@ namespace DataVerseManager.Models
                         // Encrypt password with salt:
                         newUser.Password = PasswordEncryptor(passwordWithSalt);
                         // Inform player of success:
-                        AnsiConsole.WriteLine($"Your password has been set to: {newPassword}");
-                        Console.ReadLine();
-                        Console.Clear();
+                        SpectreGeneric.PrintMessagePrompt($"Your password has been set to: {newPassword}", "green");
                         break;
                     }
-                    else if (yesOrNo == "No")
+                    else if (yesOrNo == "No")  // Tries again
                     {
-                        // Tries again
-                        AnsiConsole.WriteLine($"Then try again...");
-                        Console.ReadLine();
-                        Console.Clear();
+                        SpectreGeneric.PrintMessagePrompt("Please try again!", "yellow");
                         continue;
                     }
                 }
-                else
+                else  // One of the conditions aren't met
                 {
-                    Console.Write("Password must have at least one lowercase, one uppercase and one special character!");
-                    Console.ReadLine();
-                    Console.Clear();
+                    SpectreGeneric.PrintMessagePrompt("Password must contain at least one lowercase letter, " +
+                                                      "one upper case and wone special character!", "red");
                     continue;
                 }
 
             }
+
+            // Hand out a user ID, we made it so that it looks for the lowester possible ID
             if (RegisteredUsers.Count() == 0)
                 newUser.Id = 0;
             else
             {
                 int newId = 0;
 
-                // Extract all existing IDs into a HashSet for fast lookup
-                HashSet<int> usedIds = new HashSet<int>(RegisteredUsers.Select(u => u.Id));
+                // Extract all existing IDs into a list for fast lookup
+                List<int> usedIds = new List<int>(RegisteredUsers.Select(user => user.Id));
 
                 // Find the first free ID starting from 0
                 while (usedIds.Contains(newId))
@@ -394,82 +449,161 @@ namespace DataVerseManager.Models
 
                 newUser.Id = newId;
             }
-                RegisteredUsers.Add(newUser);
+
+            RegisteredUsers.Add(newUser);
             JsonHandeler.SaveJson(RegisteredUsers, "registeredUsers.json");
         }
 
         public static void EraseAccount()
         {
-            RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
             Console.Write("Please enter the username of the password you wish to Delete: ");
+
             string readDelName = Console.ReadLine();
-            
+
             User userToDelete = RegisteredUsers.Find(user => string.Equals(user.Name,
                         readDelName, StringComparison.OrdinalIgnoreCase));
 
-            if (RegisteredUsers.Contains(userToDelete))
+            // If there isn't a User named this,  handle coaches specifically
+            if (userToDelete == null)
             {
-                var yesOrNo = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-               .Title($"[yellow]{userToDelete.Name} will be deleted-- is this okay?[/]")
-               .AddChoices(
-               "Yes", "No"
-               )
-               );
+                Coach coachToDelete = RegisteredCoaches.Find(user => string.Equals(user.Name,
+                                      readDelName, StringComparison.OrdinalIgnoreCase));
 
-                if (yesOrNo == "Yes")
+                if (RegisteredCoaches.Contains(coachToDelete))
                 {
-                    var yesOrNo2 = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-               .Title("[red]This action cannot be undone if you proceed—are you sure?[/]")
-               .AddChoices(
-               "Yes", "No"
-               )
-               );
+                    var yesOrNo = AnsiConsole.Prompt(
+               new SelectionPrompt<string>()
+              .Title($"[yellow]Coach {coachToDelete.Name} and their proceeding Team will be deleted-- is this okay?[/]")
+              .AddChoices(
+              "Yes", "No"
+              )
+              );
 
-                    if (yesOrNo2 == "Yes")
+                    if (yesOrNo == "Yes")
                     {
+                        var yesOrNo2 = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                   .Title("[red]This action cannot be undone if you proceed, the Coach and Team Status will be completely deleted—- are you sure?[/]")
+                   .AddChoices(
+                   "Yes", "No"
+                   )
+                   );
 
-                        Console.Write($"Please confirm by entering {userToDelete.Name}'s password: ");
-                        string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
-
-                        // set salt
-                        string salt = ("#" + userToDelete.Id.ToString());
-
-                        // Append the reverse salt to the input before encrypting
-                        string saltedPasswordInput = passwordInput + salt;
-
-                        // Encrypt the salted password input
-                        string encryptedInput = PasswordEncryptor(saltedPasswordInput);
-
-                        if (userToDelete.Password == encryptedInput)
+                        if (yesOrNo2 == "Yes")
                         {
-                            Console.WriteLine($"{userToDelete.Name}'s account has bee successfully deleted!");
-                            RegisteredUsers.Remove(userToDelete);
-                            JsonHandeler.SaveJson(RegisteredUsers, "registeredUsers.json");
+
+                            Console.Write($"Please confirm by entering {coachToDelete.Name}'s password: ");
+                            string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
+
+                            // set salt
+                            string salt = ("#" + coachToDelete.OriginalId.ToString());
+
+                            // Append the reverse salt to the input before encrypting
+                            string saltedPasswordInput = passwordInput + salt;
+
+                            // Encrypt the salted password input
+                            string encryptedInput = PasswordEncryptor(saltedPasswordInput);
+
+                            if (coachToDelete.Password == encryptedInput)
+                            {
+                                RegisteredCoaches.Remove(coachToDelete);
+                                JsonHandeler.SaveJson(RegisteredCoaches, "registeredCoaches.json");
+                                // Also remove their team from the allTeams list
+                                MatchGenerator.AllTeams.Remove(coachToDelete.CoachTeam);
+                                JsonHandeler.SaveJson(MatchGenerator.AllTeams, "allTeams.json");
+                                SpectreGeneric.PrintMessagePrompt($"Coach {coachToDelete.Name}'s account and Team have been successfully deleted!", "green");
+                            }
+                            else
+                            {
+                                SpectreGeneric.PrintMessagePrompt("Wrong password-- No actions were taken on the account!", "red");
+                            }
                         }
-                        else
+                        else if (yesOrNo2 == "No")
                         {
-                            Console.WriteLine("Wrong password-- No actions were taken on the account!");
+                            SpectreGeneric.PrintMessagePrompt("No actions were taken on the account!", "yellow");
+                            return;
                         }
                     }
-                    else if (yesOrNo2 == "No")
+                    else if (yesOrNo == "No")
                     {
-                            Console.WriteLine("No actions were taken on the account!");
-                            return;
+                        SpectreGeneric.PrintMessagePrompt("No actions were taken on the account!", "yellow");
+                        return;
+                    }
+                    else
+                    {
+                        SpectreGeneric.PrintMessagePrompt("Username not found-- No actions were taken!", "red");
                     }
                 }
-            else if(yesOrNo == "No")
-            {
-                    Console.WriteLine("No actions were taken on the account!");
-                    return;
-            }
             }
             else
             {
-                Console.WriteLine("The user was not found!");
+
+                if (RegisteredUsers.Contains(userToDelete))
+                {
+                    var yesOrNo = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                   .Title($"[yellow]{userToDelete.Name} will be deleted-- is this okay?[/]")
+                   .AddChoices(
+                   "Yes", "No"
+                   )
+                   );
+
+                    if (yesOrNo == "Yes")
+                    {
+                        var yesOrNo2 = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                   .Title("[red]This action cannot be undone if you proceed—- are you sure?[/]")
+                   .AddChoices(
+                   "Yes", "No"
+                   )
+                   );
+
+                        if (yesOrNo2 == "Yes")
+                        {
+
+                            Console.Write($"Please confirm by entering {userToDelete.Name}'s password: ");
+                            string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
+
+                            // set salt
+                            string salt = ("#" + userToDelete.Id.ToString());
+
+                            // Append the reverse salt to the input before encrypting
+                            string saltedPasswordInput = passwordInput + salt;
+
+                            // Encrypt the salted password input
+                            string encryptedInput = PasswordEncryptor(saltedPasswordInput);
+
+                            if (userToDelete.Password == encryptedInput)
+                            {
+                                RegisteredUsers.Remove(userToDelete);
+                                JsonHandeler.SaveJson(RegisteredUsers, "registeredUsers.json");
+                                SpectreGeneric.PrintMessagePrompt($"{userToDelete.Name}'s account has been successfully deleted!", "green");
+                            }
+                            else
+                            {
+                                SpectreGeneric.PrintMessagePrompt("Wrong password-- No actions were taken on the account!", "red");
+                            }
+                        }
+                        else if (yesOrNo2 == "No")
+                        {
+                            SpectreGeneric.PrintMessagePrompt("No actions were taken on the account!", "yellow");
+                            return;
+                        }
+                    }
+                    else if (yesOrNo == "No")
+                    {
+                        SpectreGeneric.PrintMessagePrompt("No actions were taken on the account!", "yellow");
+                        return;
+                    }
+                }
+                else
+                {
+                    SpectreGeneric.PrintMessagePrompt("Username not found-- No actions were taken!", "red");
+                }
             }
+
         }
+
         public static string ReadLineWithEsc(out bool cancelled)
         {
             // This does what the ReadHiddenPassword() method does without hidden char string but also allows for
@@ -566,7 +700,7 @@ namespace DataVerseManager.Models
                 }
 
             }
-            // reutrn the poll of chars -- passworPoll as the new Password
+            // reutrn the poll of chars-- passworPoll as the new Password
             return passwordPoll;
         }
     }

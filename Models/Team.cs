@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using Spectre.Console;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace DataVerseManager.Models
 {
     public class Team
     {
         // Attributes
         public List<Player> TeamPlayer = new List<Player>();
-        
+
         public string TeamName { get; set; }
         public int TeamWins {  get; set; }
         public int TeamLoses {  get; set; }
 
         public double WinRate { get; set; }
+
+        public string PrimaryColor { get; set; }
+        public string SecondaryColor { get; set; }
+        public Color AccentColor { get; set; }
 
         // image path for Canvas.Image
         public string ImageFile { get; set; }
@@ -23,7 +27,9 @@ namespace DataVerseManager.Models
         // Constructor
         public Team()
         {
-         
+            PrimaryColor = "white";
+            SecondaryColor = "grey";
+            AccentColor = Color.Yellow;
         }
 
         // Methods
@@ -118,17 +124,12 @@ namespace DataVerseManager.Models
         }
         public void AddTeamMember(Player player)
         {
-            if (TeamPlayer.Count < 5)
-            {
-                TeamPlayer.Add(player);
-                player.PlayerTeam = this;
-                Console.WriteLine($"{player.PlayerName} was added to {TeamName}");
-            }
-            else
-            {
-                // If team has over 5 members, choose which one to replace
-            }
+
+            TeamPlayer.Add(player);
+            player.PlayerTeam = this;
+            Console.WriteLine($"{player.PlayerName} was added to {TeamName}");
         }
+           
         public void ShowTeamPlayers()
         {
             foreach(Player member in TeamPlayer)

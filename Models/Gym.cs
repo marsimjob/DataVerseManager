@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataVerseManager.Services;
 using Spectre.Console;
 
 namespace DataVerseManager.Models
 {
-    internal class Gym
+    public static class Gym
     {
-        public void PickAndTrainPlayer(List<Player> teamList)
+        public static void RunGym(Coach coach)
         {
-            double cashAtHand = 1000000;
+            List<Player> teamList = coach.CoachTeam.TeamPlayer;
 
+            coach.UserWallet.GetMoney(10000);
+            double cashAtHand = coach.UserWallet.ReturnWalletBalance();
+
+        
             if (cashAtHand <= 0)
             {
                 AnsiConsole.WriteLine("You're broke!");
@@ -21,6 +26,11 @@ namespace DataVerseManager.Models
                 return;
             }
 
+            if(teamList.Count <= 0)
+            {
+                SpectreGeneric.PrintMessagePrompt("You don't have any members on your team!", "red");
+                return;
+            }
             // Choose your player
             var selectedNames = AnsiConsole.Prompt(
                 new MultiSelectionPrompt<string>()
@@ -37,7 +47,8 @@ namespace DataVerseManager.Models
 
             if(selectedNames.Count <= 0)
             {
-                Console.WriteLine("No players selected. Back to main menu");
+
+                SpectreGeneric.PrintMessagePrompt("No players selected. Back to main menu", "red");
                 return;
             }
 
@@ -107,30 +118,30 @@ namespace DataVerseManager.Models
             
             if (selectedNames.Count == 1)
             {
-                prompt = new ConfirmationPrompt($"Upgrade {statToUpgrade} for player at cost {totalCost:C}?");
+                prompt = new ConfirmationPrompt($"Upgrade {statToUpgrade} for player at cost ${totalCost}?");
             }
             else
             {
-                prompt = new ConfirmationPrompt($"Upgrade {statToUpgrade} for {selectedNames.Count} players at cost {totalCost:C}?");
+                prompt = new ConfirmationPrompt($"Upgrade {statToUpgrade} for {selectedNames.Count} players at cost ${totalCost}?");
             }
 
             var chooseYes = AnsiConsole.Prompt(prompt);
 
             if (!chooseYes)
             {
-                AnsiConsole.WriteLine("Training cancelled!");
+                SpectreGeneric.PrintMessagePrompt("Training cancelled.", "red");
                 return;
             }
 
             if (totalCost > cashAtHand)
             {
-                AnsiConsole.WriteLine($"Not enough cash.\n" +
-                    $"You have: {cashAtHand:C}\n" +
-                    $"Needed: {totalCost:C}.");
+                SpectreGeneric.PrintMessagePrompt($"Not enough cash.\n" +
+                    $"You have: ${cashAtHand}\n" +
+                    $"Needed: ${totalCost}.", "red");
                 return;
             }
 
-            cashAtHand -= totalCost;
+            coach.UserWallet.UseMoney(totalCost);
             Console.Clear();
 
             // Apply new stars
@@ -143,9 +154,7 @@ namespace DataVerseManager.Models
                 }
             }
 
-            Console.WriteLine($"{cashAtHand:C} left");
-            Console.ReadLine();
-            Console.Clear();
+            SpectreGeneric.PrintMessagePrompt($"Cash left: {coach.UserWallet.ReturnWalletBalance()}");
         }
     }
 }

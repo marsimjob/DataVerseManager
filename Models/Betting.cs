@@ -106,7 +106,7 @@ namespace DataVerseManager.Models
         {
             Console.WriteLine("Now printing money: " + money);
         }
-        public static void PlaceBet(Team team1, Team team2, Coach better)
+        public static void PlaceBet(Team team1, Team team2, User better)
         {
             // Don't let player bet if they have too little money
             if(better.UserWallet.ReturnWalletBalance() <= 0)
@@ -125,7 +125,7 @@ namespace DataVerseManager.Models
             table.AddColumn($"[yellow]{better.UserWallet.ReturnWalletBalance()}[/]");
  
             var panel = new Panel(table)
-                .Header($"[white]{better.CoachName}[/]", Justify.Center)
+                .Header($"[white]{better.Name}[/]", Justify.Center)
                 .Border(BoxBorder.Rounded)
                 .Padding(1, 1, 1, 1);
 
