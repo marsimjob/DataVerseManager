@@ -13,12 +13,16 @@ namespace DataVerseManager.Models
 {
     public class Player
     {
+        private double height;
+        private string country;
+        private Team coachTeam;
+
         // Attributes
         public string PlayerName { get; set; }
         public int PlayerAge { get; set; }
         public double PlayerHeight { get; set; }
         public string PlayerCountry { get; set; }
-        public Team PlayerTeam { get; set; }
+        public Team PlayerTeam { get; set; } = new Team();
 
         public string PlayerInfo { get; set; }
 
@@ -57,20 +61,31 @@ namespace DataVerseManager.Models
         }
        
         // Default Constructor
-        public Player()
+        public Player(string name, int age)
         {
             PlayerName = "Unknown Player";
             PlayerAge = 18;
             PlayerHeight = 170;
             PlayerCountry = "Unknown";
             PlayerTeam = new Team();
-            ImageFile = "default.png";
+            ImageFile = "images/default.png";
             Speed = 0;
             Defending = 0;
             Accuracy = 0;
             Power = 0;
             PlayerInfo = "No information available.";
             TotalStat = 0;
+        }
+
+        public Player(string name, int age, double height, string country, Team coachTeam, double speed, double defending, double accuracy, double power) : this(name, age)
+        {
+            this.height = height;
+            this.country = country;
+            this.coachTeam = coachTeam;
+            Speed = speed;
+            Defending = defending;
+            Accuracy = accuracy;
+            Power = power;
         }
 
         // Methods
@@ -83,7 +98,7 @@ namespace DataVerseManager.Models
             var chart = new BarChart().Width(90)
                                       .Label($"Stats for {PlayerName}")
                                       .CenterLabel();
-                                             
+
             SpectreGeneric.AddChartBarInColor(chart, Speed, "Speed");
             SpectreGeneric.AddChartBarInColor(chart, Defending, "Defending");
             SpectreGeneric.AddChartBarInColor(chart, Accuracy, "Accuracy");
@@ -136,10 +151,9 @@ namespace DataVerseManager.Models
                 new Layout("Score").Size(20)
             );
 
-            layout["PlayerImage"].Update(new Panel(playerImage).Header(PlayerName));
-            layout["TeamImage"].Update(new Panel(teamImage).Header("Team"));
+            
             layout["Chart"].Update(new Panel(chart).Header("[bold]Stats[/]"));
-            layout["Details"].Update(dumpPanel);
+           
             layout["Score"].Update(totalScorePanel);
 
             AnsiConsole.Write(layout);

@@ -26,7 +26,9 @@ namespace DataVerseManager
             double bettingCash = 10000;
             Coach myCoach = new Coach();
 
-            myCoach.CoachTeam = AllTeams.FirstOrDefault(t => t.TeamName == "Crystal");
+            myCoach.CoachTeam = new Team();
+            myCoach.CoachName = "Coach .Net25";
+            myCoach.CoachTeam.ImageFile = "images/Nba2k26.png";
             Leaderboard ourLeaderBoard = new Leaderboard();
 
             TitleScreen.ShowSplashScreen();
@@ -90,6 +92,9 @@ namespace DataVerseManager
                             break;
                         case "COACH MENU":
                             Console.WriteLine("Show coach menu");
+                             
+                            PlayerMarket.ShowPlayerMarket(myCoach);
+
                             break;
                         case "SETTINGS":
                             AppSettings.RunSettings();
