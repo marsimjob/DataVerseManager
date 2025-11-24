@@ -1,5 +1,4 @@
-﻿using DataVerseManager.Models;
-using DataVerseManager.Services;
+﻿using DataVerseManager.Services;
 using Spectre.Console;
 using System;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataVerseManager
+namespace DataVerseManager.Models
 {
     public static class PlayerMarket
     {
@@ -51,7 +50,6 @@ namespace DataVerseManager
                     case "BUY PLAYERS":
                         // Buy players
                         BuyPlayer(coach);
-
                         break;
                     case "SELL PLAYERS":
                         // Sell players

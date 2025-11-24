@@ -169,6 +169,7 @@ namespace DataVerseManager
                     break;
                 case "PLAYER MARKET":
                     // Buy and sell players, make custom new player
+                    PlayerMarket.ShowPlayerMarket(thisCoach);
                     break;
                 case "COACH SETTINGS":
                     // Change coach name, team name, make your own colors etc
