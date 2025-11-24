@@ -12,6 +12,8 @@ namespace DataVerseManager.Models
 {
     public class Coach : User
     {
+
+        public List<Player> playersList = new List<Player>();
         // Attribute
         public Team CoachTeam { get; set; }
         public int OriginalId { get; set; }
