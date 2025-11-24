@@ -17,23 +17,10 @@ namespace DataVerseManager
             Console.InputEncoding = System.Text.Encoding.UTF8;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             
-            
-            // Put this in a wallet and make it track with json etc
-            // User --- Wallet as attribute?
-       
-            Player newP = new Player();
-
-         
-            Team newT = new Team();
-            newT.TeamName = "Apes";
-            newT.ImageFile = "images/Nba2k26.png";
-            newP.PlayerTeam = newT;
-            newP.ShowPlayerInformation();
-
             Leaderboard ourLeaderBoard = new Leaderboard();
+            MatchGenerator.AllTeams = JsonHandeler.LoadJson<List<Team>>("allteams.json");
 
             TitleScreen.ShowSplashScreen();
-           
             SpectreGeneric.LoadScreen();
            
             bool isRunning = true;

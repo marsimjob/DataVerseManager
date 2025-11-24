@@ -178,6 +178,7 @@ namespace DataVerseManager.Models
 
         private static void RunDebug()
         {
+            Console.CursorVisible = false;
             string ourSecretPassword = "flyhigh";
             string message = "[red]Only authorized staff is allowed from this point-- " +
                 $"\nPlease enter the Secret Password to confirm your identity...[/]";
@@ -210,6 +211,8 @@ namespace DataVerseManager.Models
 
         public static User LogInAccount()
         {
+            Console.CursorVisible = false;
+
             // Declare user or coach as null to look for possible matches
             User thisUser = null;
             Coach thisCoach = null;
@@ -303,6 +306,8 @@ namespace DataVerseManager.Models
 
             //Inform user of success or not
             //If succeeded, save to json as a User class
+
+            Console.CursorVisible = false;
 
             // Declare a new user object to be registered
             User newUser = new User();
@@ -456,6 +461,8 @@ namespace DataVerseManager.Models
 
         public static void EraseAccount()
         {
+            Console.CursorVisible = false;
+
             Console.Write("Please enter the username of the password you wish to Delete: ");
 
             string readDelName = Console.ReadLine();
@@ -468,6 +475,12 @@ namespace DataVerseManager.Models
             {
                 Coach coachToDelete = RegisteredCoaches.Find(user => string.Equals(user.Name,
                                       readDelName, StringComparison.OrdinalIgnoreCase));
+
+                if(coachToDelete == null)
+                {
+                    SpectreGeneric.PrintMessagePrompt("Username not found-- No actions were taken!", "red");
+                    return;
+                }
 
                 if (RegisteredCoaches.Contains(coachToDelete))
                 {
@@ -510,7 +523,7 @@ namespace DataVerseManager.Models
                                 JsonHandeler.SaveJson(RegisteredCoaches, "registeredCoaches.json");
                                 // Also remove their team from the allTeams list
                                 MatchGenerator.AllTeams.Remove(coachToDelete.CoachTeam);
-                                JsonHandeler.SaveJson(MatchGenerator.AllTeams, "allTeams.json");
+                                JsonHandeler.SaveJson(MatchGenerator.AllTeams, "allteams.json");
                                 SpectreGeneric.PrintMessagePrompt($"Coach {coachToDelete.Name}'s account and Team have been successfully deleted!", "green");
                             }
                             else
