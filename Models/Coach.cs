@@ -140,7 +140,7 @@ namespace DataVerseManager.Models
                 return;
             }
         }
-        public void ShowCoachSettings(Coach coach, Dictionary<string, Color> accentcolors)
+        public void ShowCoachSettings(Dictionary<string, Color> accentcolors)
         {
             bool running = true;
             while (running)

@@ -23,8 +23,6 @@ namespace DataVerseManager.Models
 
         // image path for Canvas.Image
         public string ImageFile { get; set; } = "images/Nba2k26.png";
-        public object Players { get; internal set; }
-
         // Constructor
         public Team()
         {

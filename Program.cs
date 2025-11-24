@@ -18,7 +18,10 @@ namespace DataVerseManager
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             
             Leaderboard ourLeaderBoard = new Leaderboard();
-            MatchGenerator.AllTeams = JsonHandeler.LoadJson<List<Team>>("allteams.json");
+
+            Team heat = MatchGenerator.AllTeams.FirstOrDefault(team => team.TeamName == "Heat");
+
+            heat.TeamPlayer[0].ShowPlayerInformation();
 
             TitleScreen.ShowSplashScreen();
             SpectreGeneric.LoadScreen();
@@ -159,7 +162,7 @@ namespace DataVerseManager
                     {
                         (A, B) = MatchGenerator.GameGenerator();
                     }
-                    Betting.PlaceBet(thisCoach.CoachTeam, B, thisCoach);
+                    Betting.PlaceBet(thisCoach.CoachTeam, B, thisCoach, true);
                     break;
                 case "YOUR TEAM":
                     // Status screen for your players
@@ -173,7 +176,7 @@ namespace DataVerseManager
                     break;
                 case "COACH SETTINGS":
                     // Change coach name, team name, make your own colors etc
-                    thisCoach.ShowCoachSettings(thisCoach, thisCoach.GetAccentcolors());
+                    thisCoach.ShowCoachSettings(thisCoach.GetAccentcolors());
                     break;
                 case "RETURN TO TOP MENU":
                     // Return to top menu

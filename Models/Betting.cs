@@ -106,7 +106,7 @@ namespace DataVerseManager.Models
         {
             Console.WriteLine("Now printing money: " + money);
         }
-        public static void PlaceBet(Team team1, Team team2, User better)
+        public static void PlaceBet(Team team1, Team team2, User better, bool coachmatch = false)
         {
             // Don't let player bet if they have too little money
             if(better.UserWallet.ReturnWalletBalance() <= 0)
@@ -145,30 +145,40 @@ namespace DataVerseManager.Models
                 // Remove money that has been bet from the wallet
                 better.UserWallet.GetMoney(-betAmount);
 
-                // Låt användaren välja lag via meny i stället för att skriva
-                string teamName = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title("[yellow]Which team do you want to bet on?[/]")
-                        .AddChoices(team1.TeamName, team2.TeamName)
-                );
-
+                string teamName = "";
                 double odds = 0;
 
-                if (teamName == team1.TeamName)
+                if (coachmatch == false)
                 {
-                    odds = team1Odds;
+                    {
+                        // Låt användaren välja lag via meny i stället för att skriva
+                        teamName = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("[yellow]Which team do you want to bet on?[/]")
+                                .AddChoices(team1.TeamName, team2.TeamName)
+                        );
+
+                        if (teamName == team1.TeamName)
+                        {
+                            odds = team1Odds;
+                        }
+                        else if (teamName == team2.TeamName)
+                        {
+                            odds = team2Odds;
+                        }
+                    }
                 }
-                else if (teamName == team2.TeamName)
+                else
                 {
-                    odds = team2Odds;
+                   teamName = team1.TeamName;
                 }
+                    AnsiConsole.MarkupLine($"\nPlacing a bet of [green]${betAmount}[/] on [blue]{teamName}[/]...");
 
-                AnsiConsole.MarkupLine($"\nPlacing a bet of [green]${betAmount}[/] on [blue]{teamName}[/]...");
+                        Console.ReadLine();
+             
 
-                Console.ReadLine();
-
-                // Simulate match and get winner
-                MatchSimulator.RunVisualMatch(team1, team2);
+                    // Simulate match and get winner
+                    MatchSimulator.RunVisualMatch(team1, team2);
                 Team Winningteam = MatchSimulator.currentWinner;
 
                 if (Winningteam.TeamName == teamName)
