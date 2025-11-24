@@ -68,7 +68,7 @@ namespace DataVerseManager.Models
             PlayerHeight = 170;
             PlayerCountry = "Unknown";
             PlayerTeam = new Team();
-            ImageFile = "images/default.png";
+            ImageFile = "images/Nba2k26.png";
             Speed = 0;
             Defending = 0;
             Accuracy = 0;
@@ -157,6 +157,7 @@ namespace DataVerseManager.Models
             layout["Score"].Update(totalScorePanel);
 
             AnsiConsole.Write(layout);
+            Console.ReadLine();
         }
 
         public void ChangeOrSetTeam()

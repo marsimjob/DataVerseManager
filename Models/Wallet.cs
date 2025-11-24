@@ -22,6 +22,10 @@ namespace DataVerseManager.Models
         {
             Balance += profit;
         }
+        public void SetBalance(double newTotal)
+        {
+             Balance = newTotal;
+        }
         
         public double ReturnWalletBalance()
         {
