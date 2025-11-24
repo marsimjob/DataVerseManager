@@ -18,7 +18,8 @@ namespace DataVerseManager.Models
         public double WinRate { get; set; }
 
         // image path for Canvas.Image
-        public string ImageFile { get; set; }
+        public string ImageFile { get; set; } = "images/Nba2k26.png";
+        public object Players { get; internal set; }
 
         // Constructor
         public Team()
