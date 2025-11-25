@@ -16,16 +16,45 @@ namespace DataVerseManager
         {
             Console.InputEncoding = System.Text.Encoding.UTF8;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            
+
             Leaderboard ourLeaderBoard = new Leaderboard();
 
-            Team heat = MatchGenerator.AllTeams.FirstOrDefault(team => team.TeamName == "Heat");
+            foreach (Team team in MatchGenerator.AllTeams)
+            {
+                Team.BuildTeam(team);
+            }
 
-            heat.TeamPlayer[0].ShowPlayerInformation();
+            JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
+            //Team heat = MatchGenerator.AllTeams.FirstOrDefault(team => team.TeamName == "Heat");
 
+            //Console.WriteLine(heat.TeamPlayer.Count());
+
+            //Player newPlayer = heat.TeamPlayer[1];
+            //Console.WriteLine(newPlayer.PlayerAge);
+            //Console.WriteLine(newPlayer.PlayerName);
+            //Console.WriteLine(newPlayer.Defending);
+            //Console.WriteLine(newPlayer.PlayerTeam.TeamName);
+            //for (int i = 0; i < heat.TeamPlayer.Count; i++)
+            //{
+            //    Console.WriteLine(heat.TeamPlayer[i].PlayerName);
+            //}
+            //newPlayer.TotalStat = newPlayer.CalculateTotalStat();
+            //newPlayer.AllocateTeam(heat);
+
+            //Console.WriteLine(newPlayer.TotalStat.ToString());
+            //// Console.WriteLine(newPlayer.PlayerTeam.TeamName);
+            //Console.ReadLine();
+            //newPlayer.ShowPlayerInformation();
+            //Console.ReadLine();
+
+            Launch(ourLeaderBoard);
+        }
+
+        private static void Launch(Leaderboard ourLeaderBoard)
+        {
             TitleScreen.ShowSplashScreen();
             SpectreGeneric.LoadScreen();
-           
+
             bool isRunning = true;
             while (isRunning)
             {
@@ -53,7 +82,7 @@ namespace DataVerseManager
                     {
                         userName = "Coach " + currentUser.Name + "⭐";
                     }
-                    else 
+                    else
                     {
                         userName = currentUser.Name;
                     }
@@ -73,10 +102,10 @@ namespace DataVerseManager
                     "MATCHBOARD", "RULE BOOK", "COACH MENU",
                     "SETTINGS", "LOG OUT"
                     }));
-                    
+
                     // Fake Loading
                     //SpectreGeneric.LoadScreen();
-                    
+
                     switch (choice)
                     {
                         case "FREE MATCH":
@@ -132,6 +161,7 @@ namespace DataVerseManager
 
             // This will be our coach in this menu
             Coach thisCoach = AccountManager.RegisteredCoaches.FirstOrDefault(user => user.Name == currentUser.Name);
+
             if(thisCoach == null)
             {
                 // Exit back to the top menu if something goes wrong here

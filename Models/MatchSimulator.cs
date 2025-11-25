@@ -118,7 +118,7 @@ namespace DataVerseManager.Models
                     // Choose a random stat (0 = Speed, 1 = Power, 2 = Accuracy, 3 = Defending)
                     int statToBoost = rng.Next(0, 4); // 0,1,2,3
 
-                    double boostAmount = rng.NextDouble() * 2.0; // small boost
+                    int boostAmount = rng.Next(1, 3); // small boost
 
                     switch (statToBoost)
                     {
@@ -136,11 +136,63 @@ namespace DataVerseManager.Models
                             break;
                     }
                 }
+                // Opposite for losing team, small decrease
+                foreach (var player in teamB.TeamPlayer)
+                {
+                    Random rng = new Random();
+
+                    // Choose a random stat (0 = Speed, 1 = Power, 2 = Accuracy, 3 = Defending)
+                    int statToBoost = rng.Next(0, 4); // 0,1,2,3
+
+                    int boostAmount = rng.Next(1, 3); // small decrease
+
+                    switch (statToBoost)
+                    {
+                        case 0:
+                            player.Speed -= boostAmount;
+                            break;
+                        case 1:
+                            player.Power -= boostAmount;
+                            break;
+                        case 2:
+                            player.Accuracy -= boostAmount;
+                            break;
+                        case 3:
+                            player.Defending -= boostAmount;
+                            break;
+                    }
+                }
                 return teamA;
             }
             else
             {
-                // Opposite for losing team
+                // Small stat boosts for winning team
+                foreach (var player in teamB.TeamPlayer)
+                {
+                    Random rng = new Random();
+
+                    // Choose a random stat (0 = Speed, 1 = Power, 2 = Accuracy, 3 = Defending)
+                    int statToBoost = rng.Next(0, 4); // 0,1,2,3
+
+                    int boostAmount = rng.Next(1, 3); // small boost
+
+                    switch (statToBoost)
+                    {
+                        case 0:
+                            player.Speed += boostAmount;
+                            break;
+                        case 1:
+                            player.Power += boostAmount;
+                            break;
+                        case 2:
+                            player.Accuracy += boostAmount;
+                            break;
+                        case 3:
+                            player.Defending += boostAmount;
+                            break;
+                    }
+                }
+                // Opposite for losing team, small decrease
                 foreach (var player in teamA.TeamPlayer)
                 {
                     Random rng = new Random();
@@ -148,7 +200,7 @@ namespace DataVerseManager.Models
                     // Choose a random stat (0 = Speed, 1 = Power, 2 = Accuracy, 3 = Defending)
                     int statToBoost = rng.Next(0, 4); // 0,1,2,3
 
-                    double boostAmount = rng.NextDouble() * 2.0; // small decrease
+                    int boostAmount = rng.Next(1, 3); // small decrease
 
                     switch (statToBoost)
                     {
@@ -351,6 +403,12 @@ namespace DataVerseManager.Models
                     Match thisMatch = new Match(DateTime.Now, teamA, teamB, OneScore, TwoScore, Matchboard.Matchboards.Count);
                     Matchboard.Matchboards.Add(thisMatch);
                     JsonHandeler.SaveJson<List<Match>>(Matchboard.Matchboards, "matchboards.json");
+
+                    // Update participants WinRate after the match
+                    teamA.UpdateTeamWinRate();
+                    teamB.UpdateTeamWinRate();
+                    JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
+
                     Console.Clear();
                 });
 

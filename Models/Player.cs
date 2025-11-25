@@ -22,12 +22,12 @@ namespace DataVerseManager.Models
         public int PlayerAge { get; set; }
         public double PlayerHeight { get; set; }
         public string PlayerCountry { get; set; }
-        public Team PlayerTeam { get; set; } = new Team();
-
+        
+        public Team PlayerTeam = null;
         public string PlayerInfo { get; set; }
 
         // image path for Canvas.Image
-        public string ImageFile { get; set; }
+        public string ImageFile { get; set; } = "images/default.png";
 
         // Stats
         // 0 - 100
@@ -41,8 +41,8 @@ namespace DataVerseManager.Models
 
         // Constructor 
         // With parameters
-        public Player(string name, int age, double height, string country, Team team, string imageFile,
-                double speed, double defending, double accuracy, double power, string info = "")
+        public Player(string name, int age, double height, string country, string imageFile,
+                double speed, double defending, double accuracy, double power, string info = "", Team team = null)
         {
             PlayerName = name;
             PlayerAge = age;
@@ -55,48 +55,34 @@ namespace DataVerseManager.Models
             Accuracy = accuracy;
             Power = power;
             PlayerInfo = info;
+            TotalStat = CalculateTotalStat();
+        }
 
+        // Default Constructor
+        public Player()
+        {
+        }
+
+        public void AllocateTeam(Team teamToSet)
+        {
+            PlayerTeam = teamToSet;
+        }
+        public double CalculateTotalStat()
+        {
             // Automatically calculate total
             TotalStat = (Speed + Defending + Accuracy + Power) / 4.0;
+            return TotalStat;
         }
-       
-        // Default Constructor
-        public Player(string name, int age)
-        {
-            PlayerName = "Unknown Player";
-            PlayerAge = 18;
-            PlayerHeight = 170;
-            PlayerCountry = "Unknown";
-            PlayerTeam = new Team();
-            ImageFile = "images/Nba2k26.png";
-            Speed = 0;
-            Defending = 0;
-            Accuracy = 0;
-            Power = 0;
-            PlayerInfo = "No information available.";
-            TotalStat = 0;
-        }
-
-        public Player(string name, int age, double height, string country, Team coachTeam, double speed, double defending, double accuracy, double power) : this(name, age)
-        {
-            this.height = height;
-            this.country = country;
-            this.coachTeam = coachTeam;
-            Speed = speed;
-            Defending = defending;
-            Accuracy = accuracy;
-            Power = power;
-        }
-
         // Methods
         public void ShowPlayerInformation()
         {
             // SET UP
             var playerImage = new CanvasImage(ImageFile).MaxWidth(40).PixelWidth(1);
-            var teamImage = new CanvasImage(PlayerTeam.ImageFile).MaxWidth(30).PixelWidth(1);
+          
+            var teamImage = new CanvasImage("images/default.png").MaxWidth(30).PixelWidth(1);
 
             var chart = new BarChart().Width(90)
-                                      .Label($"Stats for {PlayerName}")
+                                      .Label(Markup.Escape($"Stats for {PlayerName}"))
                                       .CenterLabel();
 
             SpectreGeneric.AddChartBarInColor(chart, Speed, "Speed");
@@ -106,12 +92,11 @@ namespace DataVerseManager.Models
 
             // Text to put info into
             var dumpInfoText =
-                $"Age: {PlayerAge}\n" +
-                $"Height: {PlayerHeight} cm\n" +
-                $"Team: {PlayerTeam.TeamName}\n" +
-                "\n" +
-                $"Information: {PlayerInfo}";
-
+            $"Age: {PlayerAge}\n" +
+            $"Height: {PlayerHeight} cm\n" +
+            $"Team: {PlayerTeam.TeamName}\n" +
+            $"Info: {PlayerInfo}";
+            
             // Panel for info
             var dumpPanel = new Panel(dumpInfoText).Header("[bold]Details[/]")
                                                    .Padding(1, 1)  // some spacing inside
@@ -160,13 +145,7 @@ namespace DataVerseManager.Models
             Console.ReadLine();
         }
 
-        public void ChangeOrSetTeam()
-        {
-            // Set new team for current player
-            // Looks if player is any of the other team lists- remove it from there
-            // Add to a new team of choice
-        }
-         
+
         public void UpdateStats(string statType)
         {
             // Get a random number of double 1-3 and add to stat 

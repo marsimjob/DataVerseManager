@@ -72,8 +72,11 @@ public class User
             newCoach.CoachTeam = new Team();
             // This is just temporary but lets fill the TeamPlayer list with players for now
             Team.BuildTeam(newCoach.CoachTeam);
-            // Caclucate the team's WinLossRate at initiation
-            newCoach.CoachTeam.CalculateWinLossRate();
+            //// Caclucate the team's WinLossRate at initiation
+            //newCoach.CoachTeam.CalculateWinLossRate();
+
+            // Set a default, non special logo for the coach team
+            newCoach.CoachTeam.ImageFile = "images/Nba2k26.png";
             // Let user set coach name default to their "user name + Team"
             newCoach.CoachTeam.TeamName = $"{this.Name}'s Team";
            
