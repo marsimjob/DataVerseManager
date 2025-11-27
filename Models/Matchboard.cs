@@ -114,20 +114,8 @@ namespace DataVerseManager.Models
 
         public static void SearchByTeam()
         {
-            // Lista med tillgängliga lag
-            var teams = new List<string>
-    {
-        "Warriors",
-        "Lakers",
-        "Knicks",
-        "Bulls",
-        "Celtics",
-        "Heat",
-        "Nets",
-        "Mavericks",
-        "Clippers",
-        "Rockets"
-    };
+            // Takes all team names from our allteams list and make them sleectable
+            List<string> teams = MatchGenerator.AllTeams.Select(team => team.TeamName).ToList();
 
             // Spectre.Console selection prompt
             string team = AnsiConsole.Prompt(

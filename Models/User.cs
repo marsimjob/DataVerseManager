@@ -38,7 +38,7 @@ public class User
     {
         string yesOrNo = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                   .Title($"Would you like to {Name} from Standard User status to Coach?")
+                   .Title($"Would you like to upgrade {Name} from Standard User status to Coach?")
                    .AddChoices(
                    "Yes", "No"
                    )
@@ -46,6 +46,7 @@ public class User
 
         if (yesOrNo == "Yes")
         {
+            // Create a new coach, this will remove the User object later and replace it with a Coach object
             Coach newCoach = new Coach();
             newCoach.Name = this.Name;
             newCoach.Password = this.Password;
@@ -53,6 +54,8 @@ public class User
             newCoach.OriginalId = this.Id;
             hasCoachStatus = true;
 
+
+            // Looks for first valid ID number, in case somebody has deleted their account and the ID number is open to use
             // Extract all existing IDs into a list for fast lookup
             List<int> usedIds = new List<int>(AccountManager.RegisteredCoaches.Select(used => used.Id));
 
@@ -70,18 +73,27 @@ public class User
             // Make a caoch list the gmae can keep track of so it knows if you are coach or not when you enter the menu
             // Make a coach team and give them a name and id
             newCoach.CoachTeam = new Team();
-            // This is just temporary but lets fill the TeamPlayer list with players for now
-            Team.BuildTeam(newCoach.CoachTeam);
-            //// Caclucate the team's WinLossRate at initiation
-            //newCoach.CoachTeam.CalculateWinLossRate();
+
+            //// This is just temporary but lets fill the TeamPlayer list with players for now
+            newCoach.CoachTeam.TeamPlayer = new List<Player>();
 
             // Set a default, non special logo for the coach team
             newCoach.CoachTeam.ImageFile = "images/Nba2k26.png";
             // Let user set coach name default to their "user name + Team"
             newCoach.CoachTeam.TeamName = $"{this.Name}'s Team";
-           
+            
+            // Generate 5 free players for the new Coach, loop this 5 times
+            for(int i = 5; i > 0; i--)
+            {
+                // Generate a new player
+                Player newPlayer = PlayerMarket.GeneratePlayer();
+                newCoach.CoachTeam.TeamPlayer.Add(newPlayer);
+                AnsiConsole.WriteLine($"{newPlayer.PlayerName} was added to {newCoach.Name}'s team"); 
+            }
+
             // Add newCoach's team to to the team list and save to json
             MatchGenerator.AllTeams.Add(newCoach.CoachTeam);
+            Team.BuildTeam(newCoach.CoachTeam);
             JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
 
             string changeOrNot = AnsiConsole.Prompt(

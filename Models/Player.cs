@@ -8,21 +8,18 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 using DataVerseManager.Services;
+using System.Text.Json.Serialization;
 
 namespace DataVerseManager.Models
 {
     public class Player
     {
-        private double height;
-        private string country;
-        private Team coachTeam;
-
         // Attributes
         public string PlayerName { get; set; }
         public int PlayerAge { get; set; }
         public double PlayerHeight { get; set; }
         public string PlayerCountry { get; set; }
-        
+
         public Team PlayerTeam = null;
         public string PlayerInfo { get; set; }
 
@@ -94,7 +91,6 @@ namespace DataVerseManager.Models
             var dumpInfoText =
             $"Age: {PlayerAge}\n" +
             $"Height: {PlayerHeight} cm\n" +
-            $"Team: {PlayerTeam.TeamName}\n" +
             $"Info: {PlayerInfo}";
             
             // Panel for info
@@ -112,7 +108,7 @@ namespace DataVerseManager.Models
             else
                 rank = "Super Star";
 
-            var totalScorePanel = new Panel($"{TotalStat}\n{rank}")
+            var totalScorePanel = new Panel($"{TotalStat:F1}\n{rank}")
                 .Header("[bold]Total Score[/]")
                 .Padding(5, 2)
                 .BorderColor(Color.Yellow)
@@ -194,6 +190,7 @@ namespace DataVerseManager.Models
                 Console.WriteLine($"{PlayerName}'s power has increased by {formattedPoints} points to a total of {formattedTotals}!");
 
             }
+            Console.ReadLine();
         }
     }
 }

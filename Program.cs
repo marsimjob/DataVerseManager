@@ -17,40 +17,16 @@ namespace DataVerseManager
             Console.InputEncoding = System.Text.Encoding.UTF8;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            Leaderboard ourLeaderBoard = new Leaderboard();
-
             foreach (Team team in MatchGenerator.AllTeams)
             {
                 Team.BuildTeam(team);
             }
-
             JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
-            //Team heat = MatchGenerator.AllTeams.FirstOrDefault(team => team.TeamName == "Heat");
 
-            //Console.WriteLine(heat.TeamPlayer.Count());
-
-            //Player newPlayer = heat.TeamPlayer[1];
-            //Console.WriteLine(newPlayer.PlayerAge);
-            //Console.WriteLine(newPlayer.PlayerName);
-            //Console.WriteLine(newPlayer.Defending);
-            //Console.WriteLine(newPlayer.PlayerTeam.TeamName);
-            //for (int i = 0; i < heat.TeamPlayer.Count; i++)
-            //{
-            //    Console.WriteLine(heat.TeamPlayer[i].PlayerName);
-            //}
-            //newPlayer.TotalStat = newPlayer.CalculateTotalStat();
-            //newPlayer.AllocateTeam(heat);
-
-            //Console.WriteLine(newPlayer.TotalStat.ToString());
-            //// Console.WriteLine(newPlayer.PlayerTeam.TeamName);
-            //Console.ReadLine();
-            //newPlayer.ShowPlayerInformation();
-            //Console.ReadLine();
-
-            Launch(ourLeaderBoard);
+            Launch();
         }
 
-        private static void Launch(Leaderboard ourLeaderBoard)
+        private static void Launch()
         {
             TitleScreen.ShowSplashScreen();
             SpectreGeneric.LoadScreen();
@@ -58,6 +34,9 @@ namespace DataVerseManager
             bool isRunning = true;
             while (isRunning)
             {
+                // Clear Console
+                Console.Clear();
+
                 // Set up a user and loop log-in until a valid user is found
 
                 User currentUser = null;
@@ -74,6 +53,8 @@ namespace DataVerseManager
                 bool onTopMenu = true;
                 while (onTopMenu)
                 {
+                    // Clear Console
+                    Console.Clear();
                     // Fake Loading
                     SpectreGeneric.LoadScreen();
                     string userName = "";
@@ -118,7 +99,7 @@ namespace DataVerseManager
                             Betting.PlaceBet(A, B, currentUser);
                             break;
                         case "LEADERBOARD":
-                            ourLeaderBoard.Run();
+                            Leaderboard.DisplayLeaderBoard();
                             break;
                         case "MATCHBOARD":
                             Matchboard.ShowMenu();
@@ -156,9 +137,6 @@ namespace DataVerseManager
 
         private static void RunCoachMenu(User currentUser)
         {
-            // Clear Console
-            Console.Clear();
-
             // This will be our coach in this menu
             Coach thisCoach = AccountManager.RegisteredCoaches.FirstOrDefault(user => user.Name == currentUser.Name);
 
@@ -167,7 +145,14 @@ namespace DataVerseManager
                 // Exit back to the top menu if something goes wrong here
                 return;
             }
-            
+
+            // Start coach menu loop
+            bool inCoach = true;
+            while (inCoach)
+            {
+             // Clear Console
+             Console.Clear();
+
             // Selection
             SpectreGeneric.PresentTopTitle("COACH SELECT SCREEN", AppSettings.MainColor, AppSettings.SubColor);
             string choice = AnsiConsole.Prompt(
@@ -183,38 +168,49 @@ namespace DataVerseManager
             // Fake Loading
             //SpectreGeneric.LoadScreen();
 
-            switch (choice)
-            {
-                case "PLAY MATCH":
-                    // Plays betting automatically, always bets on your team
-                    (Team A, Team B) = MatchGenerator.GameGenerator();
-                    while(B == thisCoach.CoachTeam)
-                    {
-                        (A, B) = MatchGenerator.GameGenerator();
-                    }
-                    Betting.PlaceBet(thisCoach.CoachTeam, B, thisCoach, true);
-                    break;
-                case "YOUR TEAM":
-                    // Status screen for your players
-                    break;
-                case "PLAYER WORKOUT":
-                    Gym.RunGym(thisCoach);
-                    break;
-                case "PLAYER MARKET":
-                    // Buy and sell players, make custom new player
-                    PlayerMarket.ShowPlayerMarket(thisCoach);
-                    break;
-                case "COACH SETTINGS":
-                    // Change coach name, team name, make your own colors etc
-                    thisCoach.ShowCoachSettings(thisCoach.GetAccentcolors());
-                    break;
-                case "RETURN TO TOP MENU":
-                    // Return to top menu
-                    return;
-                
-                default:
-                    Console.Error.WriteLine("Invalid choice in coach menu");
-                    break;
+                switch (choice)
+                {
+                    case "PLAY MATCH":
+                        // Plays betting automatically, always bets on your team
+                        if (thisCoach.CoachTeam.TeamPlayer.Count() >= 5)
+                        {
+                            (Team A, Team B) = MatchGenerator.GameGenerator();
+                            while (B == thisCoach.CoachTeam)
+                            {
+                                (A, B) = MatchGenerator.GameGenerator();
+                            }
+                            Betting.PlaceBet(thisCoach.CoachTeam, B, thisCoach, true);
+                        }
+                        else
+                        {
+                            SpectreGeneric.PrintMessagePrompt("You need to have a team of 5 players to play!", "red");
+                        }
+                        break;
+                    case "YOUR TEAM":
+                        // Status screen for your players
+                        LookMembers.ShowMyTeam(thisCoach.CoachTeam);
+                        break;
+                    case "PLAYER WORKOUT":
+                        Gym.RunGym(thisCoach);
+                        break;
+                    case "PLAYER MARKET":
+                        // Buy and sell players, make custom new player
+                        PlayerMarket.ShowPlayerMarket(thisCoach);
+                        break;
+                    case "COACH SETTINGS":
+                        // Change coach name, team name, make your own colors etc
+                        thisCoach.ShowCoachSettings(thisCoach.GetAccentcolors());
+                        break;
+                    case "RETURN TO TOP MENU":
+                        // Return to top menu
+                        inCoach = false;
+                        return;
+
+                    default:
+                        Console.Error.WriteLine("Invalid choice in coach menu");
+                        inCoach = false;
+                        break;
+                }
             }
         }
 

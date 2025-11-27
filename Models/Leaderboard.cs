@@ -6,68 +6,37 @@ using System.Linq;
 
 namespace DataVerseManager.Models
 {
-    public class Leaderboard
+    public static class Leaderboard
     {
         // A list that holds all teams in the leaderboard
-        private List<Team> teams = new List<Team>();
+        private static List<LeaderBoardStat> teams = JsonHandeler.LoadJson<List<LeaderBoardStat>>("leaderboard.json");
 
-        // ---------- INNER CLASS THAT DESCRIBES A TEAM ----------
-        public class Team
-        {
-            public string TeamName { get; set; } = string.Empty; // Name of the team
-            public int TeamWins { get; set; }                     // Number of wins
-            public int TeamLoses { get; set; }                    // Number of losses
-            public double WinRate { get; set; }                   // Win/Loss ratio (wins per loss)
-        }
-
-        // ---------- START POINT FOR THE LEADERBOARD ----------
-        public void Run()
-        {
-            // 1. Create all teams (with 0 wins and 0 losses)
-            CreateDefaultTeams();
-
-            // 2. Add some example games to show functionality (dummy data)
-            RecordGame("Lakers", "Celtics");   // Lakers win against Celtics
-            RecordGame("Warriors", "Heat");    // Warriors win against Heat
-            RecordGame("Knicks", "Bulls");     // Knicks win against Bulls
-            RecordGame("Warriors", "Lakers");  // Warriors win against Lakers
-
-            // 3. Display the leaderboard
-            DisplayLeaderBoard();
-
-            // 4. Wait for key press before closing console
-            AnsiConsole.MarkupLine("\n[grey]Press any key to exit...[/]");
-            Console.ReadKey();
-        }
-
-        // ---------- CREATE DEFAULT TEAMS ----------
-        private void CreateDefaultTeams()
+        private static void CreateDefaultTeams()
         {
             // Create 10 teams with 0 wins and 0 losses
-            teams.Add(new Team { TeamName = "Warriors" });
-            teams.Add(new Team { TeamName = "Lakers" });
-            teams.Add(new Team { TeamName = "Knicks" });
-            teams.Add(new Team { TeamName = "Bulls" });
-            teams.Add(new Team { TeamName = "Celtics" });
-            teams.Add(new Team { TeamName = "Heat" });
-            teams.Add(new Team { TeamName = "Nets" });
-            teams.Add(new Team { TeamName = "Mavericks" });
-            teams.Add(new Team { TeamName = "Clippers" });
-            teams.Add(new Team { TeamName = "Rockets" });
+            teams.Add(new LeaderBoardStat { TeamName = "Warriors" });
+            teams.Add(new LeaderBoardStat { TeamName = "Lakers" });
+            teams.Add(new LeaderBoardStat { TeamName = "Knicks" });
+            teams.Add(new LeaderBoardStat { TeamName = "Bulls" });
+            teams.Add(new LeaderBoardStat { TeamName = "Celtics" });
+            teams.Add(new LeaderBoardStat { TeamName = "Heat" });
+            teams.Add(new LeaderBoardStat { TeamName = "Nets" });
+            teams.Add(new LeaderBoardStat { TeamName = "Mavericks" });
+            teams.Add(new LeaderBoardStat { TeamName = "Clippers" });
+            teams.Add(new LeaderBoardStat { TeamName = "Rockets" });
 
             JsonHandeler.SaveJson(teams, "leaderboard.json");
         }
 
-        // ---------- RECORD A GAME ----------
-        private void RecordGame(string winnerTeamName, string loserTeamName)
+        public static void RecordGame(string winnerTeamName, string loserTeamName)
         {
             // Find the winning team
-            Team winner = teams.FirstOrDefault(
+            Team winner = MatchGenerator.AllTeams.FirstOrDefault(
                 t => t.TeamName.Equals(winnerTeamName, StringComparison.OrdinalIgnoreCase)
             );
 
             // Find the losing team
-            Team loser = teams.FirstOrDefault(
+            Team loser = MatchGenerator.AllTeams.FirstOrDefault(
                 t => t.TeamName.Equals(loserTeamName, StringComparison.OrdinalIgnoreCase)
             );
 
@@ -80,40 +49,53 @@ namespace DataVerseManager.Models
 
             // Increase wins for the winner
             winner.TeamWins++;
-
             // Increase losses for the loser
             loser.TeamLoses++;
-
             // Update WinRate for all teams after the change
-            RecalculateWinRatio();
-        }
+            winner.UpdateTeamWinRate();
+            loser.UpdateTeamWinRate();
 
-        // ---------- CALCULATE W/L FOR EACH TEAM ----------
-        private void RecalculateWinRatio()
-        {
-            foreach (Team team in teams)
-            {
-                // If the team has no losses → use number of wins as WinRate
-                if (team.TeamLoses == 0)
-                {
-                    team.WinRate = (double)team.TeamWins;
-                }
-                else
-                {
-                    // Otherwise calculate wins divided by losses
-                    team.WinRate = (double)team.TeamWins / team.TeamLoses;
-                }
+            LeaderBoardStat winnerTeam = new LeaderBoardStat();
+            LeaderBoardStat loserTeam = new LeaderBoardStat();
+
+            winnerTeam.TeamName = winner.TeamName;
+            winnerTeam.TeamWins = winner.TeamWins;
+            winnerTeam.TeamLoses = winner.TeamLoses;
+
+            double winnerTotalmatches = (double)(winner.TeamLoses + winner.TeamWins);
+            winnerTeam.WinRate = (winner.TeamWins / winnerTotalmatches) * 100;
+
+            loserTeam.TeamName = loser.TeamName;
+            loserTeam.TeamWins = loser.TeamWins;
+            loserTeam.TeamLoses = loser.TeamLoses;
+
+            double loserTotalmatches = (double)(loser.TeamWins + loser.TeamLoses);
+            loserTeam.WinRate =  (loser.TeamWins / loserTotalmatches) * 100;
+
+            // Remove teams with same name
+            if(teams.Any(team => team.TeamName.Equals(winnerTeam.TeamName)))
+            { 
+                teams.Remove(teams.Find(team => team.TeamName.Equals(winnerTeam.TeamName)));
             }
+            if (teams.Any(team => team.TeamName.Equals(loserTeam.TeamName)))
+            {
+                teams.Remove(teams.Find(team => team.TeamName.Equals(loserTeam.TeamName)));
+            }
+            // Then add
+            teams.Add( winnerTeam );
+            teams.Add( loserTeam );
+
+            JsonHandeler.SaveJson(teams, "leaderboard.json");
         }
 
         // ---------- DISPLAY LEADERBOARD AS TABLE ----------
-        private void DisplayLeaderBoard()
+        public static void DisplayLeaderBoard()
         {
             // Sort the teams:
             // 1. Highest W/L first
             // 2. Most wins
             // 3. Fewest losses
-            List<Team> sortedTeams = teams
+            List<LeaderBoardStat> sortedTeams = teams
                 .OrderByDescending(t => t.WinRate)
                 .ThenByDescending(t => t.TeamWins)
                 .ThenBy(t => t.TeamLoses)
@@ -130,19 +112,19 @@ namespace DataVerseManager.Models
             table.AddColumn(new TableColumn("[bold]Team[/]"));                 // Team name
             table.AddColumn(new TableColumn("[green]Wins[/]").Centered());     // Number of wins
             table.AddColumn(new TableColumn("[red]Losses[/]").Centered());     // Number of losses
-            table.AddColumn(new TableColumn("[blue]W/L[/]").Centered());       // Win/Loss ratio
+            table.AddColumn(new TableColumn("[blue]Win Rate[/]").Centered());       // Win/Loss ratio
 
             int rank = 1;
 
             // Add a row for each team
-            foreach (Team team in sortedTeams)
+            foreach (LeaderBoardStat team in sortedTeams)
             {
                 table.AddRow(
                     rank.ToString(),                    // Rank
                     "[white]" + team.TeamName + "[/]",  // Team name
                     "[green]" + team.TeamWins + "[/]",  // Wins
                     "[red]" + team.TeamLoses + "[/]",   // Losses
-                    "[blue]" + team.WinRate.ToString("F2") + "[/]" // W/L ratio (2 decimals)
+                    "[blue]" + team.WinRate.ToString("F1") +"% [/]" // W/L ratio (2 decimals)
                 );
 
                 rank++;
@@ -155,6 +137,8 @@ namespace DataVerseManager.Models
 
             // Render the panel
             AnsiConsole.Write(panel);
+
+            Console.ReadLine();
         }
     }
 }

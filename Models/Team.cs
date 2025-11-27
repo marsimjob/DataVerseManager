@@ -38,20 +38,23 @@ namespace DataVerseManager.Models
         // Builts team at initiation so that all team members in the team gets the right Team Object 
         public static void BuildTeam(Team team)
         {
-            // A double that collects all the the Total Stats from players to then get avarage from later
-            double totalPower = 0; 
-
-            foreach (Player player in team.TeamPlayer)
+            if (team.TeamPlayer.Count() > 0)
             {
-                // Give the players of the team this team as their team
-                player.PlayerTeam = team;
+                // A double that collects all the the Total Stats from players to then get avarage from later
+                double totalPower = 0;
 
-                // each itteration adds on to the totalPower
-                totalPower += player.CalculateTotalStat();
+                foreach (Player player in team.TeamPlayer)
+                {
+                    // Give the players of the team this team as their team
+                    player.PlayerTeam = team;
+
+                    // each itteration adds on to the totalPower
+                    totalPower += player.CalculateTotalStat();
+                }
+
+                // Avarage the totalPower to get the WinRate for this team
+                team.WinRate = totalPower / team.TeamPlayer.Count;
             }
-            
-            // Avarage the totalPower to get the WinRate for this team
-            team.WinRate = totalPower/team.TeamPlayer.Count;
         }
 
         //heat.UpdateWinRate();
@@ -71,17 +74,7 @@ namespace DataVerseManager.Models
             // Avarage the totalPower to get the WinRate for this team
             WinRate = totalPower / TeamPlayer.Count;
         }
-        //public void CalculateWinLossRate()
-        //{
-        //    // Make a list with only the total powers of player
-        //    List<double> ListWinRate = new List<double>();
-        //    foreach (Player p in TeamPlayer)
-        //    {
-        //        ListWinRate.Add(p.TotalStat);
-        //    }
-        //    // Each team's win rate is predicated on its Player's total stats
-        //    WinRate = ListWinRate.Average();
-        //}
+       
         public void AddTeamMember(Player player)
         {
 

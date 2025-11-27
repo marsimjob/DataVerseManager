@@ -97,14 +97,14 @@ namespace DataVerseManager.Models
 
             // Look for user in registered users list
             User thisUser = RegisteredUsers.Find(user =>
-                string.Equals(user.Name, searchUserName, StringComparison.OrdinalIgnoreCase));
+                user.Name.Equals(searchUserName));
 
             // If it doesn't find it there, look for it in the coach list
             // (Coach class inherits from User class, so it will work the same but upgraded)
             if (thisUser == null)
             {
                 thisUser = RegisteredCoaches.Find(user =>
-                string.Equals(user.Name, searchUserName, StringComparison.OrdinalIgnoreCase));
+                user.Name.Equals(searchUserName));
             }
 
             // Stop the method if user doesn't exist
@@ -173,6 +173,7 @@ namespace DataVerseManager.Models
                     break;
             }
 
+            Console.Clear();
             return thisUser;
         }
 

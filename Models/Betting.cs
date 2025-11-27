@@ -27,27 +27,6 @@ namespace DataVerseManager.Models
 
         }
 
-        // ---------- SKAPA STANDARDLAG ----------
-        public void CreateTeam()
-        {
-            Teams.Add(new Team { TeamName = "Warriors" });
-            Teams.Add(new Team { TeamName = "Lakers" });
-            Teams.Add(new Team { TeamName = "Knicks" });
-            Teams.Add(new Team { TeamName = "Bulls" });
-            Teams.Add(new Team { TeamName = "Celtics" });
-            Teams.Add(new Team { TeamName = "Heat" });
-            Teams.Add(new Team { TeamName = "Nets" });
-            Teams.Add(new Team { TeamName = "Mavericks" });
-            Teams.Add(new Team { TeamName = "Clippers" });
-            Teams.Add(new Team { TeamName = "Rockets" });
-        }
-
-        // ------------ BETTING FUNCTIONALITY ----------
-
-        // Returnerar decimalodds för två lag, baserat på deras aktuella Team.Power.
-        // "margin" är spelbolagets vinstpåslag (t.ex. 0.06 = 6%).
-        // Om margin = 0 får man "rättvisa" odds (utan vinstpåslag).
-
         public static (double teamAOdds, double teamBOdds) GetOdds(Team a, Team b, double margin = 0.0)
         {
             // Säkerhetskontroll: om något av lagen saknas kastas ett felmeddelande.
@@ -151,7 +130,7 @@ namespace DataVerseManager.Models
                 if (coachmatch == false)
                 {
                     {
-                        // Låt användaren välja lag via meny i stället för att skriva
+                        // Choose your team to bet on
                         teamName = AnsiConsole.Prompt(
                             new SelectionPrompt<string>()
                                 .Title("[yellow]Which team do you want to bet on?[/]")
@@ -170,23 +149,28 @@ namespace DataVerseManager.Models
                 }
                 else
                 {
+                   // Always bets on their own team without prompting
                    teamName = team1.TeamName;
+                   odds = team1Odds;
                 }
+
                     AnsiConsole.MarkupLine($"\nPlacing a bet of [green]${betAmount}[/] on [blue]{teamName}[/]...");
+                    Console.ReadLine();
 
-                        Console.ReadLine();
-             
-
-                    // Simulate match and get winner
-                    MatchSimulator.RunVisualMatch(team1, team2);
+                // Simulate match and get winner
+                MatchSimulator.RunVisualMatch(team1, team2);
                 Team Winningteam = MatchSimulator.currentWinner;
 
                 if (Winningteam.TeamName == teamName)
                 {
                     double potentialWin = betAmount * odds;
+
+                    Console.WriteLine(odds); 
+                    Console.WriteLine(betAmount);
                     AnsiConsole.MarkupLine(
                         $"[bold green]You won![/] {teamName} Win! Your winnings for this bet are [bold]${Math.Round(potentialWin, 2)}[/]"
                     );
+
                     // Add to wallet
                     better.UserWallet.GetMoney(potentialWin);
                     Console.ReadLine();

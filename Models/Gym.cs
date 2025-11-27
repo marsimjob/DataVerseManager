@@ -35,11 +35,7 @@ namespace DataVerseManager.Models
             var selectedNames = AnsiConsole.Prompt(
                 new MultiSelectionPrompt<string>()
                     .Title("Select one or more players to train: ")
-                    .NotRequired()
                     .PageSize(10)
-                    .InstructionsText(
-                        "[grey](Press [blue]<space>[/] to toggle a player, " +
-                        "[green]<enter>[/] to accept)[/]")
                     .AddChoices(teamList.Select(p => p.PlayerName))
             );
 
@@ -83,11 +79,11 @@ namespace DataVerseManager.Models
             // Get the base cost to multiply with selected players
             double baseCost = statToUpgrade switch
             {
-                "Speed" => 10000,
-                "Strength" => 15000,
-                "Defense" => 12500,
-                "Accuracy" => 20000,
-                _ => 10000
+                "Speed" => 1000,
+                "Strength" => 1500,
+                "Defense" => 1250,
+                "Accuracy" => 2000,
+                _ => 1000
             };
 
             // Set up a cost that will total all costs
@@ -114,47 +110,72 @@ namespace DataVerseManager.Models
             Console.Clear();
 
             // User confirms choice
-            ConfirmationPrompt prompt;
-            
-            if (selectedNames.Count == 1)
-            {
-                prompt = new ConfirmationPrompt($"Upgrade {statToUpgrade} for player at cost ${totalCost}?");
-            }
-            else
-            {
-                prompt = new ConfirmationPrompt($"Upgrade {statToUpgrade} for {selectedNames.Count} players at cost ${totalCost}?");
-            }
+            var yesOrNo = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title($"Upgrade {statToUpgrade} for player at cost ${totalCost:F2}?")
+            .AddChoices(
+            "Yes", "No")
+            );
 
-            var chooseYes = AnsiConsole.Prompt(prompt);
+            if (yesOrNo == "Yes")
+            {
+                var yesOrNo2 = AnsiConsole.Prompt(
+                         new SelectionPrompt<string>()
+                         .Title($"Upgrade {statToUpgrade} for {selectedNames.Count} players at cost ${totalCost:F2}?")
+                         .AddChoices(
+                         "Yes", "No")
+                         );
 
-            if (!chooseYes)
+                if (yesOrNo2 == "Yes")
+                {
+                    if (totalCost > cashAtHand)
+                    {
+                        SpectreGeneric.PrintMessagePrompt($"Not enough cash.\n" +
+                            $"You have: ${cashAtHand:F2}\n" +
+                            $"Needed: ${totalCost:F2}.", "red");
+                        return;
+                    }
+
+                    coach.UserWallet.UseMoney(totalCost);
+                    Console.Clear();
+
+                    // Apply new stars
+                    foreach (string name in selectedNames)
+                    {
+                        var player = teamList.FirstOrDefault(p => p.PlayerName == name);
+                        if (player != null)
+                        {
+                            player.UpdateStats(statToUpgrade); // Upgrades from Player class
+                        }
+                    }
+                    SpectreGeneric.PrintMessagePrompt($"Cash left: ${coach.UserWallet.ReturnWalletBalance():F2}");
+
+                    // Remove and replace each trained player
+                    for (int i = 0; i < selectedPlayers.Count(); i++)
+                    {
+                        coach.CoachTeam.TeamPlayer.Remove(coach.CoachTeam.TeamPlayer.Find(teamPlayer => teamPlayer.PlayerName == selectedPlayers[i].PlayerName));
+                        coach.CoachTeam.TeamPlayer.Add(selectedPlayers[i]);
+                    }
+
+                    // Remove and replace team for the updated one
+                    if(MatchGenerator.AllTeams.Any(team => team.TeamName.Equals(coach.CoachTeam.TeamName)))
+                    {
+                        MatchGenerator.AllTeams.Remove(MatchGenerator.AllTeams.Find(team => team.TeamName.Equals(coach.CoachTeam.TeamName)));
+                    }
+                    MatchGenerator.AllTeams.Add(coach.CoachTeam);
+                    JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
+                }
+                else
+                {
+                    SpectreGeneric.PrintMessagePrompt("Training cancelled.", "red");
+                    return;
+                }
+            }
+            else 
             {
                 SpectreGeneric.PrintMessagePrompt("Training cancelled.", "red");
                 return;
             }
-
-            if (totalCost > cashAtHand)
-            {
-                SpectreGeneric.PrintMessagePrompt($"Not enough cash.\n" +
-                    $"You have: ${cashAtHand}\n" +
-                    $"Needed: ${totalCost}.", "red");
-                return;
-            }
-
-            coach.UserWallet.UseMoney(totalCost);
-            Console.Clear();
-
-            // Apply new stars
-            foreach (string name in selectedNames)
-            {
-                var player = teamList.FirstOrDefault(p => p.PlayerName == name);
-                if (player != null)
-                {
-                    player.UpdateStats(statToUpgrade); // Upgrades from Player class
-                }
-            }
-
-            SpectreGeneric.PrintMessagePrompt($"Cash left: {coach.UserWallet.ReturnWalletBalance()}");
         }
     }
 }

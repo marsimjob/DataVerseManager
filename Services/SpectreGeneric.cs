@@ -108,7 +108,7 @@ namespace DataVerseManager.Services
             Console.Clear();
             AnsiConsole.MarkupLine($"[{color}]{message}[/]");
             AnsiConsole.Markup("[grey]Press any key to continue...[/]");
-            Console.ReadLine();
+            Console.ReadKey(true);
             Console.Clear();
         }
     }

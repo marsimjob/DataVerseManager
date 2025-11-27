@@ -388,27 +388,38 @@ namespace DataVerseManager.Models
 
                                 if (winnerScores)
                                 {
-                                    if (winner == teamA) OneScore += rng.Next(1, 3); // +1 or +2
-                                    else TwoScore += rng.Next(1, 3);
+                                    if (winner == teamA) 
+                                        OneScore += rng.Next(1, 3); // +1 or +2
+                                    else 
+                                        TwoScore += rng.Next(1, 3);
                                 }
 
                                 if (loserScores)
                                 {
-                                    if (winner == teamA) TwoScore += rng.Next(1, 3);
-                                    else OneScore += rng.Next(1, 3);
+                                    if (winner == teamA) 
+                                        TwoScore += rng.Next(1, 3);
+                                    else 
+                                        OneScore += rng.Next(1, 3);
                                 }
                             }
                         }
                     }
+
+                    // Save the match to history in matchboards
                     Match thisMatch = new Match(DateTime.Now, teamA, teamB, OneScore, TwoScore, Matchboard.Matchboards.Count);
                     Matchboard.Matchboards.Add(thisMatch);
                     JsonHandeler.SaveJson<List<Match>>(Matchboard.Matchboards, "matchboards.json");
+                    
+                    if (winner == teamA)
+                        Leaderboard.RecordGame(teamA.TeamName, teamB.TeamName);
+                    if (winner == teamB)
+                        Leaderboard.RecordGame(teamA.TeamName, teamB.TeamName);
 
                     // Update participants WinRate after the match
                     teamA.UpdateTeamWinRate();
                     teamB.UpdateTeamWinRate();
-                    JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
 
+                    JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
                     Console.Clear();
                 });
 

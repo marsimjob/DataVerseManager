@@ -39,6 +39,7 @@ public static class LookMembers
 
         while (running)
         {
+            Console.Clear();
             // Bygger en lista med spelarnas namn + en "RETURN"
             // Detta skapar menyval i SpectreConsole
             var choice = AnsiConsole.Prompt(
@@ -47,15 +48,15 @@ public static class LookMembers
                     .PageSize(10) // hur många som syns på skärmen
                     .AddChoices(
                         team.TeamPlayer.Select(p => p.PlayerName)
-                        .Append("RETURN") // lägger till en retur-knapp
+                        .Append("RETURN TO COACH MENU") // lägger till en retur-knapp
                     )
             );
 
             //  Om användaren väljer att gå tillbaka
-            if (choice == "RETURN")
+            if (choice == "RETURN TO COACH MENU")
             {
                 running = false;
-                break;
+                return;
             }
 
             //  Hitta den spelare som valdes i listan
@@ -66,7 +67,7 @@ public static class LookMembers
             if (selectedPlayer != null)
             {
                 Console.Clear();
-                selectedPlayer.ShowPlayerInformation();   // <- visar spelaren med bild + stats
+                selectedPlayer.ShowPlayerInformation();  
             }
         }
     }

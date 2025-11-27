@@ -129,7 +129,6 @@ new Rule(
             string input = "";
             ConsoleKeyInfo keyInfo;
 
-            // --- ESC + typed-input reader ---
             while (true)
             {
                 keyInfo = Console.ReadKey(true);
@@ -146,8 +145,19 @@ new Rule(
                     break;
                 }
 
-                input += keyInfo.KeyChar;
-                Console.Write(keyInfo.KeyChar);
+                if (keyInfo.Key == ConsoleKey.Backspace)
+                {
+                    if (input.Length > 0)
+                    {
+                        input = input.Substring(0, (input.Length - 1));
+                        Console.Write("\b \b");
+                    }
+                }
+                else
+                {
+                    input += keyInfo.KeyChar;
+                    Console.Write(keyInfo.KeyChar);
+                }
             }
 
             if (!searching)
