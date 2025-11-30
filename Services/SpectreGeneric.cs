@@ -34,7 +34,7 @@ namespace DataVerseManager.Services
                int rollIntervals = 45;
                for (int i = 0; i < rollIntervals; i++)
                {
-                   if (i < rollIntervals)
+                   if (i < rollIntervals - 1)
                    {
                        // Rooling ball, refreshing the basketLine string
                        basketLine += "\b\b" + " 🏀";

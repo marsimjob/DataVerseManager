@@ -30,5 +30,12 @@ namespace DataVerseManager.Models
 
             return (randomTeamA, randomTeamB);
         }
+
+        public static void LiveMatch()
+        {
+            (Team A, Team B) = MatchGenerator.GameGenerator();
+            MatchSimulator.RunVisualMatch(A, B);
+            Console.ReadLine();
+        }
     }
 }

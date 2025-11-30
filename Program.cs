@@ -16,15 +16,7 @@ namespace DataVerseManager
         {
             Console.InputEncoding = System.Text.Encoding.UTF8;
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-            foreach (Team team in MatchGenerator.AllTeams)
-            {
-                Team.BuildTeam(team);
-            }
-            JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
-
-            MatchGenerator.AllTeams[3].TeamPlayer[2].ShowPlayerInformation();
-
+            
             Launch();
         }
 
@@ -87,13 +79,13 @@ namespace DataVerseManager
                     }));
 
                     // Fake Loading
-                    //SpectreGeneric.LoadScreen();
+                    SpectreGeneric.LoadScreen();
 
                     switch (choice)
                     {
                         case "FREE MATCH":
                             // Make it so that the user can select matches that are going on today
-                            LiveMatch();
+                            MatchGenerator.LiveMatch();
                             break;
                         case "BETTING MATCH":
                             // Make it so that the user can select matches that are going on today
@@ -112,14 +104,14 @@ namespace DataVerseManager
                         case "COACH MENU":
                             if (currentUser.hasCoachStatus)
                             {
-                                RunCoachMenu(currentUser);
+                                Coach.RunCoachMenu(currentUser);
                             }
                             else
                             {
                                 currentUser.UpgradeToCoach();
                                 if (currentUser.hasCoachStatus)
                                 {
-                                    RunCoachMenu(currentUser);
+                                    Coach.RunCoachMenu(currentUser);
                                 }
                             }
                             break;
@@ -137,93 +129,22 @@ namespace DataVerseManager
             }
         }
 
-        private static void RunCoachMenu(User currentUser)
+        static void SetUp()
         {
-            // This will be our coach in this menu
-            Coach thisCoach = AccountManager.RegisteredCoaches.FirstOrDefault(user => user.Name == currentUser.Name);
-
-            if(thisCoach == null)
+            foreach (Team team in MatchGenerator.AllTeams)
             {
-                // Exit back to the top menu if something goes wrong here
-                return;
+                Team.BuildTeam(team);
             }
+            JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
 
-            // Start coach menu loop
-            bool inCoach = true;
-            while (inCoach)
-            {
-             // Clear Console
-             Console.Clear();
-
-            // Selection
-            SpectreGeneric.PresentTopTitle("COACH SELECT SCREEN", AppSettings.MainColor, AppSettings.SubColor);
-            string choice = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-            .Title($"What's up next, Coach {thisCoach.Name}⭐")
-            .HighlightStyle(new Style(foreground: AppSettings.AccentColor))
-            .PageSize(10)
-            .AddChoices(new[] {
-                    "PLAY MATCH", "YOUR TEAM","PLAYER WORKOUT",
-                    "PLAYER MARKET", "COACH SETTINGS", "RETURN TO TOP MENU"
-            }));
-
-            // Fake Loading
-            //SpectreGeneric.LoadScreen();
-
-                switch (choice)
-                {
-                    case "PLAY MATCH":
-                        // Plays betting automatically, always bets on your team
-                        if (thisCoach.CoachTeam.TeamPlayer.Count() >= 5)
-                        {
-                            (Team A, Team B) = MatchGenerator.GameGenerator();
-                            while (B == thisCoach.CoachTeam)
-                            {
-                                (A, B) = MatchGenerator.GameGenerator();
-                            }
-                            Betting.PlaceBet(thisCoach.CoachTeam, B, thisCoach, true);
-                        }
-                        else
-                        {
-                            SpectreGeneric.PrintMessagePrompt("You need to have a team of 5 players to play!", "red");
-                        }
-                        break;
-                    case "YOUR TEAM":
-                        // Status screen for your players
-                        LookMembers.ShowMyTeam(thisCoach.CoachTeam);
-                        break;
-                    case "PLAYER WORKOUT":
-                        Gym.RunGym(thisCoach);
-                        break;
-                    case "PLAYER MARKET":
-                        // Buy and sell players, make custom new player
-                        PlayerMarket.ShowPlayerMarket(thisCoach);
-                        break;
-                    case "COACH SETTINGS":
-                        // Change coach name, team name, make your own colors etc
-                        thisCoach.ShowCoachSettings(thisCoach.GetAccentcolors());
-                        break;
-                    case "RETURN TO TOP MENU":
-                        // Return to top menu
-                        inCoach = false;
-                        return;
-
-                    default:
-                        Console.Error.WriteLine("Invalid choice in coach menu");
-                        inCoach = false;
-                        break;
-                }
-            }
+            MatchGenerator.AllTeams[1].TeamPlayer[2].ShowPlayerInformation();
+            MatchGenerator.AllTeams[2].TeamPlayer[4].ShowPlayerInformation();
+            MatchGenerator.AllTeams[3].TeamPlayer[3].ShowPlayerInformation();
+            MatchGenerator.AllTeams[4].TeamPlayer[3].ShowPlayerInformation();
+            MatchGenerator.AllTeams[5].TeamPlayer[1].ShowPlayerInformation();
+            MatchGenerator.AllTeams[7].TeamPlayer[2].ShowPlayerInformation();
+            MatchGenerator.AllTeams[9].TeamPlayer[4].ShowPlayerInformation();
         }
-
-        static void LiveMatch()
-        {
-            (Team A, Team B) = MatchGenerator.GameGenerator();
-            MatchSimulator.RunVisualMatch(A, B);
-            Console.ReadLine();
-        }
-
-
     
     }
 }

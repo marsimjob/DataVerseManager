@@ -6,19 +6,8 @@ using System.Collections.Generic;
 namespace DataVerseManager;
          public static class AppSettings
 {
-    // Using Spectre.Console mark up tags for colors
-    public struct UserColors
-    {
-        public string StoredMainColor { get; set; }
-        public string StoredSubColor { get; set; }
-        public string StoredAccentColor { get; set; }
-    }
 
-    public static string MainColor = "white";
-    public static string SubColor = "grey";
-    public static Color AccentColor = Color.Orange1;
-
-    public static Dictionary<string, TeamTheme> TeamThemes = new()
+    public static Dictionary<string, TeamTheme> TeamThemes = new Dictionary<string, TeamTheme>
     {
         ["Warriors"] = new TeamTheme(Color.Blue, Color.Yellow, Color.White),
         ["Lakers"] = new TeamTheme(Color.Purple, Color.Yellow, Color.White),
@@ -31,6 +20,19 @@ namespace DataVerseManager;
         ["Clippers"] = new TeamTheme(Color.Red, Color.Blue, Color.White),
         ["Rockets"] = new TeamTheme(Color.Red, Color.White, Color.Grey),
     };
+
+    // Using Spectre.Console mark up tags for colors
+    public struct UserColors
+    {
+        public string StoredMainColor { get; set; }
+        public string StoredSubColor { get; set; }
+        public string StoredAccentColor { get; set; }
+    }
+
+    public static string MainColor = "white";
+    public static string SubColor = "grey";
+    public static Color AccentColor = Color.Orange1;
+
     public static void RunSettings()
     {
 

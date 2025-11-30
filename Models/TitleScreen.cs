@@ -7,6 +7,7 @@ namespace DataVerseManager.Models
     {
         public static void ShowSplashScreen()
         {
+            Console.CursorVisible = false;
             AnsiConsole.Clear();
 
             var image = new Spectre.Console.CanvasImage("images/Nba2k26.png")

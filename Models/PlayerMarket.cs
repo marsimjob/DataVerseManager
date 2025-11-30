@@ -54,6 +54,7 @@ namespace DataVerseManager.Models
             bool running = true;
             while (running)
             {
+                SpectreGeneric.LoadScreen();
                 Console.Clear();
                 SpectreGeneric.PresentTopTitle("PLAYER MARKET", AppSettings.MainColor, AppSettings.SubColor);
                 var choice = AnsiConsole.Prompt(
@@ -162,8 +163,15 @@ namespace DataVerseManager.Models
 
                 myCoach.CoachTeam.TeamPlayer.Remove(selectedPlayer);
                 Team.BuildTeam(myCoach.CoachTeam);
-               
+
                 // Save changes to json
+                if (AccountManager.RegisteredCoaches.Contains(myCoach))
+                {
+                    AccountManager.RegisteredCoaches.Remove(myCoach);
+                }
+                AccountManager.RegisteredCoaches.Add(myCoach);
+                JsonHandeler.SaveJson<List<Coach>>(AccountManager.RegisteredCoaches, "registeredCoaches.json");
+
                 if (MatchGenerator.AllTeams.Any(team => team.TeamName.Equals(myCoach.CoachTeam.TeamName)))
                 {
                     MatchGenerator.AllTeams.Remove(MatchGenerator.AllTeams.Find(team => team.TeamName.Equals(myCoach.CoachTeam.TeamName)));
@@ -249,8 +257,15 @@ namespace DataVerseManager.Models
                     // Adds the player to our team
                     myCoach.CoachTeam.TeamPlayer.Add(selectedPlayer);
                     Team.BuildTeam(myCoach.CoachTeam);
-                    
+
                     // Save changes to json
+                    if (AccountManager.RegisteredCoaches.Contains(myCoach))
+                    {
+                        AccountManager.RegisteredCoaches.Remove(myCoach);
+                    }
+                    AccountManager.RegisteredCoaches.Add(myCoach);
+                    JsonHandeler.SaveJson<List<Coach>>(AccountManager.RegisteredCoaches, "registeredCoaches.json");
+
                     if (MatchGenerator.AllTeams.Any(team => team.TeamName.Equals(myCoach.CoachTeam.TeamName)))
                     {
                         MatchGenerator.AllTeams.Remove(MatchGenerator.AllTeams.Find(team => team.TeamName.Equals(myCoach.CoachTeam.TeamName)));
@@ -502,8 +517,15 @@ namespace DataVerseManager.Models
             newPlayer.PlayerTeam = myCoach.CoachTeam;
 
             Team.BuildTeam(myCoach.CoachTeam);
-            
+
             // Save changes to json
+            if (AccountManager.RegisteredCoaches.Contains(myCoach))
+            {
+                AccountManager.RegisteredCoaches.Remove(myCoach);
+            }
+            AccountManager.RegisteredCoaches.Add(myCoach);
+            JsonHandeler.SaveJson<List<Coach>>(AccountManager.RegisteredCoaches, "registeredCoaches.json");
+
             if (MatchGenerator.AllTeams.Any(team => team.TeamName.Equals(myCoach.CoachTeam.TeamName)))
             {
                 MatchGenerator.AllTeams.Remove(MatchGenerator.AllTeams.Find(team => team.TeamName.Equals(myCoach.CoachTeam.TeamName)));

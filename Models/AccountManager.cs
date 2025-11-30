@@ -53,6 +53,7 @@ namespace DataVerseManager.Models
 
     {'<','>'}, {'>','?'}, {'?','/'}, {'/','<'}
 };
+
         // Reverse table, we used LINQ to reverse the key and value to be the opposite of EncodeTable 
         private static readonly Dictionary<char, char> DecodeTable =
         EncodeTable.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
@@ -328,7 +329,8 @@ namespace DataVerseManager.Models
                     return;
                 }
 
-                if (RegisteredUsers.Any(user => string.Equals(user.Name, newName, StringComparison.OrdinalIgnoreCase)))
+                if (RegisteredUsers.Any(user => string.Equals(user.Name, newName, StringComparison.OrdinalIgnoreCase)) 
+                    || RegisteredCoaches.Any(user => string.Equals(user.Name, newName, StringComparison.OrdinalIgnoreCase)))
                 {
                     SpectreGeneric.PrintMessagePrompt("Username already exists, please choose another one!", "yellow");
                     continue;

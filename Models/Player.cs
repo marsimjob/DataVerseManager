@@ -74,9 +74,13 @@ namespace DataVerseManager.Models
         public void ShowPlayerInformation()
         {
             // SET UP
-            CanvasImage playerImage = new CanvasImage(ImageFile).MaxWidth(20).PixelWidth(1).NearestNeighborResampler();
+            CanvasImage playerImage = new CanvasImage(ImageFile).MaxWidth(40).PixelWidth(1).NearestNeighborResampler();
 
-            CanvasImage teamImage = new CanvasImage("images/Nba2k26.png").MaxWidth(30).PixelWidth(1);
+            CanvasImage teamImage = null;
+            if (PlayerTeam != null)
+            {
+               teamImage = new CanvasImage(PlayerTeam.ImageFile).MaxWidth(40).PixelWidth(1).NearestNeighborResampler();
+            }
 
             BarChart chart = new BarChart().Width(90)
                                       .Label(Markup.Escape($"Stats for {PlayerName}"))
@@ -87,16 +91,33 @@ namespace DataVerseManager.Models
             SpectreGeneric.AddChartBarInColor(chart, Accuracy, "Accuracy");
             SpectreGeneric.AddChartBarInColor(chart, Power, "Power");
 
-            // Text to put info into
-            var dumpInfoText =
+            var dumpInfoText = "";
+
+            if (PlayerTeam != null)
+            {
+                // Text to put info into
+                dumpInfoText =
+            $"Name: {PlayerName}\n" +
             $"Age: {PlayerAge}\n" +
-            $"Height: {PlayerHeight} cm\n" +
+            $"Height: {PlayerHeight:F1} m\n" +
+            $"Team: {PlayerTeam.TeamName}\n" +
             $"Info: {PlayerInfo}";
-            
-            // Panel for info
-            var dumpPanel = new Panel(dumpInfoText).Header("[bold]Details[/]")
-                                                   .Padding(1, 1)  // some spacing inside
-                                                   .BorderColor(Color.Grey);
+            }
+            else
+            {
+                // Text to put info into
+                dumpInfoText =
+            $"Name: {PlayerName}\n" +
+            $"Age: {PlayerAge}\n" +
+            $"Height: {PlayerHeight:F1} m\n" +
+            $"Info: {PlayerInfo}";
+            }
+
+                // Panel for info
+                var dumpPanel = new Panel(dumpInfoText).Header("[bold]Details[/]")
+                                                       .Padding(2, 2)  // some spacing inside
+                                                       .BorderColor(Color.Grey)
+                                                       .Expand();
             string rank;
 
             if (TotalStat < 20)
@@ -120,20 +141,32 @@ namespace DataVerseManager.Models
             new Layout("Top").Size(20), 
             new Layout("Bottom").Size(10)
             );
-
-            layout["Top"].SplitColumns(
-                new Layout("PlayerImage").Size(20),
-                  new Layout("Details").Size(30),
-                new Layout("TeamImage").Size(30)
+            if (PlayerTeam != null)
+            {
+                layout["Top"].SplitColumns(
+                new Layout("PlayerImage").Size(18),
+                  new Layout("Details").Size(28),
+                     new Layout("TeamImage").Size(12)
             );
+            }
+            else
+            {
+                layout["Top"].SplitColumns(
+              new Layout("PlayerImage").Size(18),
+                new Layout("Details").Size(28)
+          );
+            }
 
-            layout["Bottom"].SplitColumns(
-                new Layout("Chart"),
-                new Layout("Score").Size(20)
-            );
+                layout["Bottom"].SplitColumns(
+                    new Layout("Chart"),
+                                new Layout("Score").Size(20)
+                );
 
             layout["PlayerImage"].Update(playerImage);
-            layout["TeamImage"].Update(teamImage);
+            if (PlayerTeam != null)
+            {
+                layout["TeamImage"].Update(teamImage);
+            }
             layout["Details"].Update(dumpPanel);
             layout["Chart"].Update(new Panel(chart).Header("[bold]Stats[/]"));
             layout["Score"].Update(totalScorePanel);
