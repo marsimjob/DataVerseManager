@@ -74,11 +74,11 @@ namespace DataVerseManager.Models
         public void ShowPlayerInformation()
         {
             // SET UP
-            var playerImage = new CanvasImage(ImageFile).MaxWidth(40).PixelWidth(1);
-          
-            var teamImage = new CanvasImage("images/default.png").MaxWidth(30).PixelWidth(1);
+            CanvasImage playerImage = new CanvasImage(ImageFile).MaxWidth(20).PixelWidth(1).NearestNeighborResampler();
 
-            var chart = new BarChart().Width(90)
+            CanvasImage teamImage = new CanvasImage("images/Nba2k26.png").MaxWidth(30).PixelWidth(1);
+
+            BarChart chart = new BarChart().Width(90)
                                       .Label(Markup.Escape($"Stats for {PlayerName}"))
                                       .CenterLabel();
 
@@ -122,7 +122,7 @@ namespace DataVerseManager.Models
             );
 
             layout["Top"].SplitColumns(
-                new Layout("PlayerImage").Size(40),
+                new Layout("PlayerImage").Size(20),
                   new Layout("Details").Size(30),
                 new Layout("TeamImage").Size(30)
             );
@@ -132,9 +132,10 @@ namespace DataVerseManager.Models
                 new Layout("Score").Size(20)
             );
 
-            
+            layout["PlayerImage"].Update(playerImage);
+            layout["TeamImage"].Update(teamImage);
+            layout["Details"].Update(dumpPanel);
             layout["Chart"].Update(new Panel(chart).Header("[bold]Stats[/]"));
-           
             layout["Score"].Update(totalScorePanel);
 
             AnsiConsole.Write(layout);

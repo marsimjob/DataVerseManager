@@ -18,31 +18,31 @@ namespace DataVerseManager.Models
         new Player("Jordan “Hawk” Miller", 26, 1.98, "USA", "images/default.png",
         85, 70, 88, 75, "Fast two-way guard", null),
 
-        new Player("Leo “Anchor” Silva", 29, 2.08, "Brazil", "images/default.png",
+        new Player("Leo “Anchor” Silva", 29, 2.08, "Brazil", "images/p4.png",
         65, 92, 60, 90, "Strong defensive center", null),
 
-        new Player("Victor “Blaze” Carter", 24, 1.92, "USA", "images/default.png",
+        new Player("Victor “Blaze” Carter", 24, 1.92, "USA", "images/p5.png",
         90, 60, 82, 70, "Explosive scorer, high energy", null),
 
-        new Player("Evan “Ice” Thompson", 30, 1.97, "Canada", "images/default.png",
+        new Player("Evan “Ice” Thompson", 30, 1.97, "Canada", "images/p7.png",
         72, 75, 93, 65, "Cold-blooded shooter", null),
 
-        new Player("Rafael “Engine” Cruz", 27, 1.90, "Spain", "images/default.png",
+        new Player("Rafael “Engine” Cruz", 27, 1.90, "Spain", "images/p9.png",
         88, 68, 78, 72, "Elite floor general", null),
 
-        new Player("Damon “Rhino” Brooks", 31, 2.05, "USA", "images/default.png",
+        new Player("Damon “Rhino” Brooks", 31, 2.05, "USA", "images/p11.png",
         60, 88, 64, 95, "Power forward with strength", null),
 
-        new Player("Kai “Shadow” Tanaka", 25, 1.88, "Japan", "images/default.png",
+        new Player("Kai “Shadow” Tanaka", 25, 1.88, "Japan", "images/p3.png",
         92, 58, 84, 62, "Speedy slasher", null),
 
-        new Player("Mason “Tower” Grant", 28, 2.12, "USA", "images/default.png",
+        new Player("Mason “Tower” Grant", 28, 2.12, "USA", "images/p8.png",
         55, 95, 58, 97, "Dominant rim protector", null),
 
-        new Player("Nikolai “Sniper” Markov", 23, 1.96, "Russia", "images/default.png",
+        new Player("Nikolai “Sniper” Markov", 23, 1.96, "Russia", "images/p12.png",
         75, 62, 95, 68, "Elite 3-point shooter", null),
 
-        new Player("Tariq “Wizard” Hassan", 26, 1.93, "Egypt", "images/default.png",
+        new Player("Tariq “Wizard” Hassan", 26, 1.93, "Egypt", "images/p2.png",
         82, 70, 80, 70, "Creative passer and playmaker", null)
         }; 
   
@@ -275,16 +275,47 @@ namespace DataVerseManager.Models
                 return;
             }
         }
+        // Creates a new player for the coach manually (all stats and details are input by user)
         public static void CreatePlayer(Coach myCoach)
         {
             Console.Clear();
             AnsiConsole.MarkupLine("[bold yellow]Create a New Player[/]\n");
 
+            // Ask for name, use ANsiConsole.Ask to return a name
             string name = AnsiConsole.Ask<string>("Enter [green]Player Name[/]: ");
-            int age = AnsiConsole.Ask<int>("Enter [green]Age[/]: ");
-            double height = AnsiConsole.Ask<double>("Enter [green]Height (cm)[/]: ");
+            
+            // Chech for name, declare int age as 0 at initiation
+            int age = 0;
+            // As long as int 'age' is under 18, you will keep looping in the while loop
+            while (age < 18) 
+            {
+              age  = AnsiConsole.Ask<int>("Enter [green]Age[/]: ");
+              
+              if(age < 18) // If you have less than 18 you also get error
+                {
+                    Console.Clear();
+                    AnsiConsole.WriteLine("Please enter something above 18");
+                }
+            }
+
+            double height = 0;
+            while (height < 180)
+            {
+                // The AnsiConsole.Ask puts the input from the player into the variable of (double) height 
+                height = AnsiConsole.Ask<double>("Enter [green]Height (cm)[/]: ");
+                
+                // Again, it warms the user that the height doesnt fit the requirements of the while loop
+                if (height < 180)
+                {
+                    Console.Clear();
+                    AnsiConsole.WriteLine("Your player has to be at least 180cm to play! Try again!");
+                }
+            }
+
+            // AnsiConsole.Ask is like a WriteLine() command but also a ReadLine() commad
             string country = AnsiConsole.Ask<string>("Enter [green]Country[/]: ");
 
+            // Default to 0 for all stats before putting values in them later in the setStat section
             double speed = 0;
             double defending = 0;
             double accuracy = 0;
@@ -292,6 +323,8 @@ namespace DataVerseManager.Models
 
             // We have a max of 100 points ot spread out on these 4 stats
             double pointsToSpread = 100;
+
+            // We set these as false so that we can loop later
             bool speedSet = false;
             bool defenseSet = false;
             bool powerSet = false;
@@ -308,28 +341,32 @@ namespace DataVerseManager.Models
                         speed = AnsiConsole.Ask<double>($"Enter [blue]Speed[/] (0 - {pointsToSpread}): ");
                         if (speed < 0 || speed > pointsToSpread)
                         {
-                            AnsiConsole.WriteLine($"[red]Please enter points between 0 - {pointsToSpread} (your points left)..[/]");
+                            AnsiConsole.WriteLine($"Please enter points between 0 - {pointsToSpread} (your points left)..");
                         }
                         else
                         {
+                            // Get out of loop
                             speedSet = true;
                             pointsToSpread -= speed;
                         }
                     }
 
-                    if (pointsToSpread <= 0)
+                    if (pointsToSpread <= 0) // if you don't have any more points to spend
                     {
-                        AnsiConsole.WriteLine($"You have no more points to spend left...");
+                        AnsiConsole.WriteLine("You have no more points to spend left...");
                         break;
                     }
 
+                    // On to defense-- if you haven't set defense stat yet with your spread points, keep looping
                     while (defenseSet == false)
                     {
+                        // Writes out how many points we got left to spread
                         AnsiConsole.WriteLine($"You have {pointsToSpread} left...");
                         defending = AnsiConsole.Ask<double>($"Enter [blue]Defending[/] (0 - {pointsToSpread}): ");
-                        if (defending < 0 || defending > pointsToSpread)
+                        
+                        if (defending < 0 || defending > pointsToSpread) // You cannot write less than 0 or more than what you can spend
                         {
-                            AnsiConsole.WriteLine($"[red]Please enter points between 0 - {pointsToSpread} (your points left)..[/]");
+                            AnsiConsole.WriteLine($"Please enter points between 0 - {pointsToSpread} (your points left)..");
                         }
                         else
                         {
@@ -340,7 +377,7 @@ namespace DataVerseManager.Models
 
                     if (pointsToSpread <= 0)
                     {
-                        AnsiConsole.WriteLine($"You have no more points to spend left...");
+                        AnsiConsole.WriteLine("You have no more points to spend left...");
                         break;
                     }
 
@@ -403,15 +440,18 @@ namespace DataVerseManager.Models
                 if (okayStats == "Yes")
                 {
                     Console.Clear();
-                    AnsiConsole.WriteLine("You have no more points to spend left...");
+                    // break the biggest loop
                     setStats = true;
                 }
                 else if (okayStats == "No")
                 {
                     Console.Clear();
+                    // tell them it doesnt work...
                     AnsiConsole.WriteLine("Restarting stat distribution...");
                     // reset all conditions...
+                    // reset 100 points
                     pointsToSpread = 100;
+                    // reset for loop
                     speedSet = false;
                     defenseSet = false;
                     powerSet = false;
@@ -420,18 +460,19 @@ namespace DataVerseManager.Models
                 }
             }
 
+            // Everything we set above will be inserted into a new player object:
             Player newPlayer = new Player
             (
             name,
             age,
             height,
             country,
-            "images/default.png",    
+            PlayerInfoHolder.imagePath[rand.Next(0, PlayerInfoHolder.imagePath.Count())], // Take a random image for yoru player face
             speed,
             defending,
             accuracy,
             power,
-            "",                      
+            PlayerInfoHolder.infoDump[rand.Next(0, PlayerInfoHolder.imagePath.Count())], // Take a random background story for your player                   
             myCoach.CoachTeam      
             );
 
@@ -445,12 +486,14 @@ namespace DataVerseManager.Models
 
             if (yesOrNo == "Yes")
             {
+                // Spend money from chosen coach's (set in parameter) wallet
                 myCoach.UserWallet.UseMoney(100);
             }
             else if (yesOrNo == "No")
             {
                 Console.WriteLine("Player creation cancelled. Returning to menu...");
                 Console.ReadLine();
+                // Return so that nothing gets saved
                 return;
             }
 
@@ -478,36 +521,42 @@ namespace DataVerseManager.Models
             Console.ReadLine();
         }
 
+        // Automatically creates a new player
         public static Player GeneratePlayer()
         {
+            // Declares new player object
             Player newPlayer = new Player();
 
+            // Randomizes name, first, nickname, and lastname
             string first = PlayerInfoHolder.FirstNames[rand.Next(PlayerInfoHolder.FirstNames.Count)];
             string nick = PlayerInfoHolder.Nicknames[rand.Next(PlayerInfoHolder.Nicknames.Count)];
             string last = PlayerInfoHolder.LastNames[rand.Next(PlayerInfoHolder.LastNames.Count)];
             newPlayer.PlayerName = $"{first} {nick} {last}";
 
-            int age = rand.Next(20, 45 + 1);
+            // Random age for the player, 18 at least max 45
+            int age = rand.Next(18, 45 + 1);
             newPlayer.PlayerAge = age;
 
+            // Random height, same deal but with doubles
             double height = 180 + rand.NextDouble() * 50;
             newPlayer.PlayerHeight = height;
 
+            // Random country from the list of available countries
             string country = PlayerInfoHolder.Countries[rand.Next(PlayerInfoHolder.Countries.Count)];
             newPlayer.PlayerCountry = country;
-            
+
             newPlayer.PlayerTeam = null;
 
-            newPlayer.Speed = rand.Next(20,40 + 1);
+            // Randomize stats
+            newPlayer.Speed = rand.Next(20, 40 + 1);
             newPlayer.Power = rand.Next(20, 40 + 1);
             newPlayer.Defending = rand.Next(20, 40 + 1);
             newPlayer.Accuracy = rand.Next(20, 40 + 1);
-
             newPlayer.TotalStat = newPlayer.CalculateTotalStat();
 
-            newPlayer.PlayerInfo = "";
-
-            newPlayer.ImageFile = "images/default.png";
+            // Set Random back-story and image for our player
+            newPlayer.PlayerInfo = PlayerInfoHolder.infoDump[rand.Next(PlayerInfoHolder.infoDump.Count())];
+            newPlayer.ImageFile = PlayerInfoHolder.imagePath[rand.Next(0, PlayerInfoHolder.imagePath.Count())];
 
             return newPlayer;
         }

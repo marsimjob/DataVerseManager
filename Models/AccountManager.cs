@@ -8,7 +8,8 @@ namespace DataVerseManager.Models
     {
         // We created an AccountManager class that handles log in and register of accounts.
         // Additionally: We added a Password retriever for forgotten passwords for the users
-
+        // Erasing accounts depending on their status is also available.
+        // And a debug setting for us developers.
         // List of registered users -- I set it to our json, if the json fails we make a new list
         public static List<User> RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json") ?? new List<User>();
         // List of registered coaches -- same as above
@@ -110,10 +111,7 @@ namespace DataVerseManager.Models
             // Stop the method if user doesn't exist
             if (thisUser == null)
             {
-                Console.Clear();
-                Console.WriteLine("Username not found!");
-                Console.WriteLine("Press Enter to continue...");
-                Console.ReadLine();
+                SpectreGeneric.PrintMessagePrompt("User could not be find!", "red");
                 return;
             }
 
@@ -221,44 +219,48 @@ namespace DataVerseManager.Models
             while (true)
             {
                 AnsiConsole.Markup($"[grey]Please enter your Username: [/]");
-                string nameInput = ReadLineWithEsc(out bool cancelled);
+                string nameInput = ReadLineWithEsc(out bool cancelled); // ReadLineWithEsc is our own method, it also outs a bool that cancels the process on ESC
 
+                // If ESC was pressde in the ReadLineWithEsc() method, cancelled will be true and this triggers
                 if (cancelled)
                 {
                     SpectreGeneric.PrintMessagePrompt("Log-in Cancelled.", "red");
                     return null;
                 }
-
-                // Look up username
+                
+                // Look up username with LINQ
                 thisUser = RegisteredUsers
                     .FirstOrDefault(user => string.Equals(user.Name, nameInput, StringComparison.OrdinalIgnoreCase));
 
+                // If no user is found, look at the coach list too with LINQ
                 if (thisUser == null)
                 {
                    thisCoach = RegisteredCoaches
                                         .FirstOrDefault(user => string.Equals(user.Name, nameInput, StringComparison.OrdinalIgnoreCase));
                 }
 
+                // If neither exists, inform the user and go back to loop start
                 if (thisUser == null && thisCoach == null)
                 {
                     SpectreGeneric.PrintMessagePrompt("Username doesn't exist, please try again!", "red");
-                    continue;
+                    continue; // Start loop over
                 }
-                break; // found username
+
+                break; // Found username
             }
 
-            bool noInputPassword = true;
             while (true)
             {
                 AnsiConsole.Markup($"[grey]Please enter your Password : [/]");
                 string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
+                
                 if (cancelled)
                 {
                     SpectreGeneric.PrintMessagePrompt("Log-in Cancelled.", "red");
                     return null;
                 }
 
-                // Append salt
+                // Apply salt
                 string salt;
 
                 if (thisCoach != null)
@@ -313,9 +315,6 @@ namespace DataVerseManager.Models
             // Declare a new user object to be registered
             User newUser = new User();
 
-            // Prepare our json list
-            RegisteredUsers = JsonHandeler.LoadJson<List<User>>("registeredUsers.json");
-
             //Ask user for what user name they would wish to have
             //Look in Json files if there is an account with the same name -- if there is we can suggest the same name but with numbers in the end (2 random numbers)
             // Confirm if its okay with yes or no, Specter Console
@@ -368,23 +367,28 @@ namespace DataVerseManager.Models
                     return;
                 }
 
+                // Check conditions for password vailibility
                 // Preset to false, if all of them turn out true after the foreach loop, then the password is accepted
                 bool hasLower = false;
                 bool hasUpper = false;
                 bool hasSpecial = false;
+                int minLength = 6;
+                int currentLength = 0;
 
-                foreach (char c in newPassword)
+                foreach (char characeter in newPassword)
                 {
-                    if (char.IsLower(c))
+                    if (char.IsLower(characeter))
                         hasLower = true;
-                    else if (char.IsUpper(c))
+                    else if (char.IsUpper(characeter))
                         hasUpper = true;
-                    else if (!char.IsLetterOrDigit(c))
+                    else if (!char.IsLetterOrDigit(characeter))
                         hasSpecial = true;
+                    // Counts how many number of chars in newPassword at each iteration 
+                    currentLength++;
                 }
 
-                // If all are found:
-                if (hasLower && hasUpper && hasSpecial)
+                // If all conditions are met:
+                if (hasLower && hasUpper && hasSpecial && currentLength >= minLength)
                 {
                     var yesOrNo = AnsiConsole.Prompt(
                      new SelectionPrompt<string>()
@@ -431,7 +435,7 @@ namespace DataVerseManager.Models
                 else  // One of the conditions aren't met
                 {
                     SpectreGeneric.PrintMessagePrompt("Password must contain at least one lowercase letter, " +
-                                                      "one upper case and wone special character!", "red");
+                                                      "one upper case, one special character AND be 6 characters long!", "red");
                     continue;
                 }
 
@@ -460,6 +464,7 @@ namespace DataVerseManager.Models
             JsonHandeler.SaveJson(RegisteredUsers, "registeredUsers.json");
         }
 
+        // Looks at Json list and erases chosen account
         public static void EraseAccount()
         {
             Console.CursorVisible = false;
@@ -577,6 +582,11 @@ namespace DataVerseManager.Models
 
                             Console.Write($"Please confirm by entering {userToDelete.Name}'s password: ");
                             string passwordInput = ReadHiddenPasswordWithEsc(out bool cancelled);
+                            if(cancelled)
+                            {
+                                SpectreGeneric.PrintMessagePrompt("Wrong password-- No actions were taken on the account!", "red");
+                                return;
+                            }
 
                             // set salt
                             string salt = ("#" + userToDelete.Id.ToString());
@@ -621,7 +631,7 @@ namespace DataVerseManager.Models
         public static string ReadLineWithEsc(out bool cancelled)
         {
             // This does what the ReadHiddenPassword() method does without hidden char string but also allows for
-            // Escaping the code if you press wrong options in the menu
+            // You can press ESC to cancel your inputs and return to the log-in screen
 
             // Add substrings into an empty string object
             string stringPoll = "";
@@ -690,15 +700,19 @@ namespace DataVerseManager.Models
                     cancelled = true;
                     return null;
                 }
+                
                 // Save the key read to passwordPoll and show the char each time as "★"
                 if (!char.IsControl(keyRead.KeyChar))
                 {
+                    // this one saves the key to my poll of string
                     passwordPoll += keyRead.KeyChar;
+                    // this next one gives a visual write-out to the console
                     AnsiConsole.Markup("[yellow]★[/]");
                 }
                 // Erase char in password if the lenght is 1 and up
                 else if (keyRead.Key == ConsoleKey.Backspace && passwordPoll.Length >= 1)
                 {
+                    // You replace your string with the current string minus 1 in the length
                     passwordPoll = passwordPoll.Substring(0, passwordPoll.Length - 1);
                     // \b is a back space that moves the cursor in Console back,
                     // makes a empty space (in other words replace the previous char with empty),

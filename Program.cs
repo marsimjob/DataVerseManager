@@ -23,6 +23,8 @@ namespace DataVerseManager
             }
             JsonHandeler.SaveJson<List<Team>>(MatchGenerator.AllTeams, "allteams.json");
 
+            MatchGenerator.AllTeams[3].TeamPlayer[2].ShowPlayerInformation();
+
             Launch();
         }
 
